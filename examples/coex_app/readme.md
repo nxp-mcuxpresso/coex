@@ -1,18 +1,21 @@
 Overview
 ========
+
 The example to demonstrate the usage of Bluetooth BT/BLE and WiFi profiles coexistence.
 
-Before building the example application select Wi-Fi module macro in the app_config.h. (see #define WIFI_<SoC Name>_BOARD_<Module Name>).
+Before building the example application select Wi-Fi module macro in the app_config.h. (see #define WIFI_`<SoC Name>`_BOARD_`<Module Name>`).
 
 This document provides step-by-step procedures to build and test the example,
 and also instructions for running the included sample applications.
 
 SDK version
 ===========
+
 - Version: 2.16.100
 
 Toolchain supported
 ===================
+
 Coex environment is suited to be run on a Linux-based OS (Ubuntu OS for example), WSL (Ubuntu 20.04 on Windows) or Windows (command line). There are three tools that need to be installed:
 
 - CMake
@@ -22,11 +25,13 @@ Coex environment is suited to be run on a Linux-based OS (Ubuntu OS for example)
 Depending on system used installing each tool done differently.
 
 **NOTE:**
+
 1. Make sure that the paths of all these tools are set into the Path system variable.
 2. Tri radio coex app currently **only supports arm-gcc** compilation.
 
 Hardware requirements
 =====================
+
 - Micro USB cable
 - RD-RW61X-BGA/FRDMRW612 board
 - Personal Computer
@@ -34,22 +39,22 @@ Hardware requirements
 Board settings
 ==============
 
-PIN NAME     |  RDRW612-BGA
--------------|--------------------------
-FC0_UART_TXD |  HD2(pin 3) <---> HD3(TX)
-FC0_UART_RXD |  HD2(pin 2) <---> HD3(RX)
+| PIN NAME     | RDRW612-BGA              |
+| ------------ | ------------------------ |
+| FC0_UART_TXD | HD2(pin 3) <---> HD3(TX) |
+| FC0_UART_RXD | HD2(pin 2) <---> HD3(RX) |
 
 **NOTE:**
+
 1. For RDRW612-BGA/QFN A1&A2 board, need to confirm the following settings.
    - unload JP19, load JP9, JP23
    - Connect JP47 to GND.
 
      > _Connecting JP47 to GND only needs to be GND once after power-on, and then it can be removed. Both A1&A2 JP47 and A0 JP30 are grounded to close U51._
      >
-     > <font color=red>_The pins corresponding to U51 on different boards may not be JP47 or JP30, please check._</font>
+     > `<font color=red>`_The pins corresponding to U51 on different boards may not be JP47 or JP30, please check._`</font>`
+     >
 2. WiFi and BLE use `FC3` UART and OT uses `FC0` UART.
-
-
 
 Building the examples
 =====================
@@ -57,11 +62,13 @@ Building the examples
 ### 1. Downloading repo:
 
 Download the mcu-sdk-2.0 SDK package:
+
 ```bash
 $ cd <path-to-sdk>/
 ```
 
 Download the ot-nxp repo to `<path-to-sdk>/middleware/wireless/coex/third_party/`:
+
 ```bash
 $ cd <path-to-sdk>/middleware/wireless/coex/third_party/
 $ git clone https://github.com/NXP/ot-nxp.git -b v1.4.0-pvw1
@@ -72,6 +79,7 @@ $ git submodule update --init --recursive
 ---
 
 ### 2. Build OT CLI library:
+
 ```bash
 # NOTE: Make sure the paths of the SDK package and arm-gcc tool are set to the Path system variable.
 # For example,
@@ -91,23 +99,22 @@ $ ./script/build_rw612 ot_cli  -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INS
 
 Modify these macros to generate different coexistence images,
 
-coexistence images     |  COEX_ENABLE_WIFI  |  COEX_ENABLE_BLE  |  COEX_ENABLE_OT  |  Simulation Case
------------------------|--------------------|-------------------|------------------|--------------------------
-WiFi + BLE             |  ON                | ON                |  OFF             |  Matter over WiFi
-WiFi + OT              |  ON                | OFF               |  ON              |     /
-BLE  + OT              |  OFF               | ON                |  ON              |  Matter over Thread
-WiFi + BLE + OT        |  ON                | ON                |  ON              |  Matter over WiFi + OT BR
-
+| coexistence images | COEX_ENABLE_WIFI | COEX_ENABLE_BLE | COEX_ENABLE_OT | Simulation Case          |
+| ------------------ | ---------------- | --------------- | -------------- | ------------------------ |
+| WiFi + BLE         | ON               | ON              | OFF            | Matter over WiFi         |
+| WiFi + OT          | ON               | OFF             | ON             | /                        |
+| BLE  + OT          | OFF              | ON              | ON             | Matter over Thread       |
+| WiFi + BLE + OT    | ON               | ON              | ON             | Matter over WiFi + OT BR |
 
 > NOTE: If building BLE+OT, the ot libs should set `DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS` to `OFF`.
 
 Modify these options according to your needs,
 
-Options                |  Value
------------------------|----------------------------------------------------------------------------
-COEX_NXP_BASE          |  `edgefast` (default) - base on edgefast-shell
-COEX_EXAMPLE_BOARD     |  `rdrw612bga` (default) - RW612-BGA, `frdmrw612` - FRDMRW612
-CMAKE_BUILD_TYPE       |  `flash_debug`(default), `flash_release` (**Use this option if you need to test throughput.**)
+| Options            | Value                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| COEX_NXP_BASE      | `edgefast` (default) - base on edgefast-shell                                                         |
+| COEX_EXAMPLE_BOARD | `rdrw612bga` (default) - RW612-BGA, `frdmrw612` - FRDMRW612                                         |
+| CMAKE_BUILD_TYPE   | `flash_debug`(default), `flash_release` (**Use this option if you need to test throughput.**) |
 
 ```bash
 # For coex_cli example,
@@ -119,17 +126,24 @@ $ ./script/build_rw612 coex_wpa_supplicant -DCOEX_ENABLE_WIFI=ON -DCOEX_ENABLE_B
 ```
 
 After a successful coex_cli build, the `elf` and `binary` files are found in `build_rw612/rw612_coex_cli/bin`:
+
 - coex_cli.elf (the elf image)
 - coex_cli.bin (the binary)
 
 After a successful coex_wpa_supplicant build, the `elf` and `binary` files are found in `build_rw612/rw612_coex_wpa_supplicant/bin`:
+
 - coex_wpa_supplicant.elf (the elf image)
 - coex_wpa_supplicant.bin (the binary)
 
 Flash Binaries
 ==============
 
+> Note: Monolithic feature is default enabled, this means it's no need to flash binaries manually.
+>
+> If want to disable monolithic feature, for CPU1 need set  `CONFIG_MONOLITHIC_WIFI` to `0` ; for CPU2 need set `gPlatformMonolithicApp_d` to `0`
+
 At this point flash the image with the following command,
+
 ```bash
 # PFW is wrapped into SDK package -> <sdk package>/components/conn_fwloader/fw_bin
 
@@ -145,19 +159,22 @@ J-Link> loadbin C:\xxx\coex_wpa_supplicant.bin, 0x08000000
 
 Prepare the Demo
 ================
-1.  Connect a micro USB cable between the PC host and the MCU-Link USB port (J7) on the board.
-2.  Open a serial terminal with the following settings:
-    - 115200 baud rate
-    - 8 data bits
-    - No parity
-    - One stop bit
-    - No flow control
-3.  Download the program to the target board.
-4.  Launch the debugger in your IDE to begin running the example.
+
+1. Connect a micro USB cable between the PC host and the MCU-Link USB port (J7) on the board.
+2. Open a serial terminal with the following settings:
+   - 115200 baud rate
+   - 8 data bits
+   - No parity
+   - One stop bit
+   - No flow control
+3. Download the program to the target board.
+4. Launch the debugger in your IDE to begin running the example.
 
 Running the example
-================
+===================
+
 The log below shows the output of the coex examples (based on edgefast-shell) in the terminal window:
+
 ```bash
         Coex APP
 
@@ -176,17 +193,22 @@ BLE shell initialization
 
 @Coex>
 ```
+
 1. WiFi Test
 
 > NOTE: All wifi commands require adding `wifi.` prefix.
+
 - Get the Wi-Fi driver and firmware version:
+
 ```bash
 @Coex> wifi.wlan-version
 WLAN Driver Version   : v1.3.r48.p10
 @Coex> WLAN Firmware Version : rw610w-V2, IMU, FP99, 18.99.6.p6, PVE_FIX 1
 Command wlan-version
 ```
+
 - Get MAC Address:
+
 ```bash
 @Coex> wifi.wlan-mac
 MAC address
@@ -194,7 +216,9 @@ MAC address
 uAP MAC Address: 00:50:43:02:99:23
 Command wlan-mac
 ```
+
 - Scan the network:
+
 ```bash
 @Coex> wifi.wlan-scan
 Scan scheduled...
@@ -223,8 +247,11 @@ Scan scheduled...
 ```
 
 2. BLE Test
+
 > NOTE: Please use the command "help" to view the specific commands supported by the example.
+
 - BLE scan devices (the BLE host must initialized before):
+
 ```bash
 @Coex> bt.init
 @Coex> Bluetooth initialized
@@ -249,7 +276,9 @@ Bluetooth active scan enabled
 Scan successfully stopped
 @Coex>
 ```
+
 - BLE advertise (the BLE host must initialized before):
+
 ```bash
 @Coex> bt.init
 @Coex> Bluetooth initialized
@@ -258,7 +287,9 @@ Advertising started
 @Coex> bt.advertise off
 Advertising stopped
 ```
+
 - BLE connect (the BLE host must initialized before):
+
 ```bash
 @Coex> bt.init
 @Coex> Bluetooth initialized
@@ -266,7 +297,9 @@ Advertising stopped
 Connection pending
 Connected: 7D:FD:FD:4D:FD:90 (random)
 ```
+
 - BLE pairing and bonding:
+
 ```bash
 GATT peripheral role side,
 1. Initialize the Host, press "bt.init",
@@ -285,7 +318,9 @@ GATT central role side,
    it could be started from central side by pressing "bt.security <level>", such as "bt.security 2".
 6. If the bondable is unsupported by central role, press "bt.bondable off". Then start step 5.
 ```
+
 - BLE 1M/2M/Coded PHY update:
+
 ```bash
 GATT peripheral role side,
 1. Initialize the Host, press "bt.init",
@@ -307,7 +342,9 @@ GATT central role side,
    such as "bt.phy-update 2 2".
 6. The message "LE PHY updated: TX PHY LE 2M, RX PHY LE 2M" would be printed if the phy is updated. note, if peer do not support phy update, then this message will not be printed.
 ```
+
 - BLE Data Packet Length Extension update:
+
 ```bash
 GATT peripheral role side,
 1. Initialize the Host, press "bt.init".
@@ -359,7 +396,9 @@ LE data len updated: TX (len: 50 time: 512) RX (len: 27 time: 328)
 7. When LE data len is updated by the peer device, below information will be printed.
 LE data len updated: TX (len: 50 time: 512) RX (len: 65 time: 632)
 ```
+
 - BLE GATT data signing:
+
 ```bash
 GATT peripheral role side,
 1. Initialize the Host, press "bt.init",
@@ -385,7 +424,9 @@ GATT central role side,
    perform the GATT data signing sequence, press "gatt.signed-write <handle> <data> [length] [repeat]",
    such as "gatt.signed-write 22 AA 1"
 ```
+
 - BLE GATT Service Changed Indication:
+
 ```bash
 GATT peripheral role side,
 1. Initialize the Host, press "bt.init",

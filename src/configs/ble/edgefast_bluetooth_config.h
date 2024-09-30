@@ -42,7 +42,7 @@
  * with specified driver, should be no less than 512.
  */
 #ifndef CONFIG_BT_HCI_TX_STACK_SIZE
-    #define CONFIG_BT_HCI_TX_STACK_SIZE 1024
+    #define CONFIG_BT_HCI_TX_STACK_SIZE 2048
 #endif
 
 /*! @brief HCI TX task priority.

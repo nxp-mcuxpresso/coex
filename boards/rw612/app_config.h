@@ -13,10 +13,31 @@
 #define WIFI_BT_USE_IMU_INTERFACE 1
 #define RW610
 
+/* Monolithic configure */
+/* Include CPU1 FW */
+#if CONFIG_WIFI_BLE_COEX_APP
 #define CONFIG_MONOLITHIC_WIFI              1
-#define CONFIG_MONOLITHIC_BT                0
-#define CONFIG_MONOLITHIC_IEEE802154        1
-#if ((CONFIG_MONOLITHIC_WIFI) || (CONFIG_MONOLITHIC_BT) || (CONFIG_MONOLITHIC_IEEE802154))
+#else
+#define CONFIG_MONOLITHIC_WIFI              0
+#endif
+ 
+/* Include CPU2 FW */
+#if (CONFIG_OT_CLI) /* CPU2 FW using combo image (ble + 15.4, 15.4) */
+#define CONFIG_MONOLITHIC_BLE_15_4          1
+#define CONFIG_MONOLITHIC_BLE               0
+#elif !(CONFIG_DISABLE_BLE) /* CPU2 FW using ble only image (ble) */
+#define CONFIG_MONOLITHIC_BLE_15_4          0
+#define CONFIG_MONOLITHIC_BLE               1
+#else /* Not use CPU2 FW */
+#define CONFIG_MONOLITHIC_BLE_15_4          0
+#define CONFIG_MONOLITHIC_BLE               0
+#endif
+
+#if (CONFIG_MONOLITHIC_BLE && CONFIG_MONOLITHIC_BLE_15_4)
+#error "The case that CONFIG_MONOLITHIC_BLE and CONFIG_MONOLITHIC_BLE_15_4 both be set is now allowed"
+#endif
+
+#if ((CONFIG_MONOLITHIC_WIFI) || (CONFIG_MONOLITHIC_BLE) || (CONFIG_MONOLITHIC_BLE_15_4))
 #define CONFIG_MFG_MONOLITHIC               0
 #define CONFIG_SOC_SERIES_RW6XX_REVISION_A2 1
 #define gPlatformMonolithicApp_d            1

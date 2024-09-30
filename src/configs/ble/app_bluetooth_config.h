@@ -40,6 +40,7 @@
 #endif
 
 #define CONFIG_BLE_ADV_REPORT_BUFFER_FILTER 1
+#define CONFIG_BT_RX_STACK_SIZE             2500
 
 #define CONFIG_BT_SNOOP        1
 #define CONFIG_BT_RF_TEST_MODE 1
