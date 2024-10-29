@@ -29,7 +29,7 @@ No specail setting to do for wifi&ble coex.
 ## 2.1 Configuration
 =====================
 
-Modify build/${board}/coex_wifi_edgefast/app_config.h to generate different coexistence images.
+Modify examples/${board}/coex_examples/coex_wifi_edgefast/app_config.h to generate different coexistence images.
 
 1. Macros releated to Wi-Fi/BLE component.
 
@@ -60,12 +60,12 @@ If want to disable BLE monolithic feature, define ```CONFIG_MONOLITHIC_BLE``` to
 > flash_debug:
 ```bash
 $ cd mcu-sdk-3.0
-$ west build -b rdrw612bga middleware/wireless/coex/build/src/coex_wifi_edgefast --log-level=debug --toolchain armgcc --config=flash_debug -d coex_wifi_edgefast
+$ west build -b rdrw612bga examples/src/coex_examples/coex_wifi_edgefast --toolchain armgcc --config=flash_debug -d coex_wifi_edgefast
 ```
 > flash_release
 ```bash
 $ cd mcu-sdk-3.0
-$ west build -b rdrw612bga middleware/wireless/coex/build/src/coex_wifi_edgefast --log-level=debug --toolchain armgcc --config=flash_release -d coex_wifi_edgefast
+$ west build -b rdrw612bga examples/src/coex_examples/coex_wifi_edgefast --toolchain armgcc --config=flash_release -d coex_wifi_edgefast
 ```
 
 **NOTE:**

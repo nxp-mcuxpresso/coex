@@ -2292,7 +2292,12 @@ Select this for LE Peripheral role support.
 
 #endif /* CONFIG_BT_HCI_HOST */
 
+#ifdef CONFIG_NET_BUF_USER_DATA_SIZE
+#undef CONFIG_NET_BUF_USER_DATA_SIZE
 #define CONFIG_NET_BUF_USER_DATA_SIZE CONFIG_BT_BUF_RESERVE
+#else
+#define CONFIG_NET_BUF_USER_DATA_SIZE CONFIG_BT_BUF_RESERVE
+#endif
 
 /****************** system work queue configuration *********************/
 /*! @brief System workqueue stack size
