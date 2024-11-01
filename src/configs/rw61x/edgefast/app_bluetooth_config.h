@@ -9,9 +9,4 @@
 #include "edgefast_bluetooth_debug_config_Gen.h"
 #include "edgefast_bluetooth_extension_config_Gen.h"
 
-#include "edgefast_bluetooth_config.h"
-#include "edgefast_bluetooth_debug_config.h"
-
-
 #define CONFIG_BLE_ADV_REPORT_BUFFER_FILTER 1
-#define CONFIG_BT_RX_STACK_SIZE             2500

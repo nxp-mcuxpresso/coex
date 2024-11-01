@@ -224,6 +224,15 @@ SECTIONS
     . = ALIGN(4);
   } > m_text
 
+  ._bt_ias_cb :
+  {
+    . = ALIGN(4);
+    _bt_ias_cb_list_start = .;
+    KEEP(*(SORT(._bt_ias_cb.static.*)))
+    _bt_ias_cb_list_end = .;
+    . = ALIGN(4);
+  } > m_text
+
   ._bt_gatt_service_static :
   {
     . = ALIGN(4);
@@ -383,8 +392,9 @@ SECTIONS
     KEEP(*(SORT(._k_mem_slab*)))
     _k_mem_slab_list_end = .;
     . = ALIGN(4);
-    _net_buf_pool_list = .;
+    _net_buf_pool_list_start = .;
     KEEP(*(SORT(._net_buf_pool*)))
+    _net_buf_pool_list_end = .;
     . = ALIGN(4);
     __data_end__ = .;        /* define a global symbol at data end */
   } > m_data

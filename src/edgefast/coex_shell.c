@@ -66,19 +66,19 @@ static void process_cmd_wifi(int32_t argc, char **argv)
     }
 }
 
-static shell_status_t cmd_wifi(shell_handle_t shell, int32_t argc, char **argv)
+static int cmd_wifi(const struct shell *sh, size_t argc, char **argv)
 {
     if (!strcmp(argv[0], "wifi.help")) {
-        shell_help(shell);
+        shell_help(sh);
         help_command(argc, argv);
-        return kStatus_SHELL_Success;
+        return SHELL_CMD_HELP_PRINTED;
     }
 
     process_cmd_wifi(argc, argv);
     return 0;
 }
 
-SHELL_CMD_REGISTER(wifi, NULL, "WiFi shell commands", cmd_wifi, 1, SHELL_MAX_ARGS);
+SHELL_CMD_REGISTER(wifi, NULL, "WiFi shell commands", cmd_wifi);
 
 static void wifi_CommandInit(shell_handle_t shell)
 {

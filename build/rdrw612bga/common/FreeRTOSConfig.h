@@ -75,7 +75,7 @@
 #define configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H 1
 
 /* Memory allocation related definitions. */
-#define configSUPPORT_STATIC_ALLOCATION         0
+#define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
 #define configTOTAL_HEAP_SIZE                   ((size_t)(300 * 1024))
 #define configAPPLICATION_ALLOCATED_HEAP        1
@@ -129,7 +129,7 @@
 #define INCLUDE_eTaskGetState               0
 #define INCLUDE_xEventGroupSetBitFromISR    1
 #define INCLUDE_xTimerPendFunctionCall      1
-#define INCLUDE_xTaskAbortDelay             0
+#define INCLUDE_xTaskAbortDelay             1
 #define INCLUDE_xTaskGetHandle              0
 #define INCLUDE_xTaskResumeFromISR          1
 
