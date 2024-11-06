@@ -33,6 +33,11 @@
 #if CONFIG_WPA_SUPP_MBEDTLS
 #define CONFIG_WPA_SUPP      1
 
+#if !CONFIG_HOSTAPD
+#undef CONFIG_HOSTAPD
+#define CONFIG_HOSTAPD 1
+#endif
+
 #if CONFIG_WPA_SUPP
 #ifdef RW610
 #define CONFIG_WPA_SUPP_WPS               1
