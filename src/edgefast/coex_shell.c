@@ -78,7 +78,7 @@ static int cmd_wifi(const struct shell *sh, size_t argc, char **argv)
     return 0;
 }
 
-SHELL_CMD_REGISTER(wifi, NULL, "WiFi shell commands", cmd_wifi);
+SHELL_CMD_ARG_REGISTER(wifi, NULL, "WiFi shell commands", cmd_wifi, 1, SHELL_MAX_ARGS);
 
 static void wifi_CommandInit(shell_handle_t shell)
 {
