@@ -1,71 +1,130 @@
-# 1. Overview
-==============
+## Overview
 
 This document provides step-by-step procedures to build and test coex examples,
 and also instructions for running the included sample applications.
 
-## 1.1 SDK
-===========
-
-- Version: NXP SDK next
-
-- Set up NXP SDK next generation environment.
-
-## 1.2 Hardware requirements
-=============================
+### Hardware requirements
 
 - Micro USB cable
-- RD-RW61X-BGA board
+- RD-RW612-BGA board
 - Personal Computer
 
-## 1.3 Board settings
-======================
+### Board settings
 
-No specail setting to do for wifi&ble coex.
+| PIN NAME     | RDRW612-BGA              |
+| ------------ | ------------------------ |
+| FC0_UART_TXD | HD2(pin 3) <---> HD3(TX) |
+| FC0_UART_RXD | HD2(pin 2) <---> HD3(RX) |
 
-# 2. Build and flash
-=====================
+**NOTE:**
 
-## 2.1 Configuration
-=====================
+1. For RDRW612-BGA/QFN A1&A2 board, need to confirm the following settings.
+   - unload JP19, load JP9, JP23
+   - Connect JP47 to GND.
 
-Modify examples/${board}/coex_examples/coex_wifi_edgefast/app_config.h to generate different coexistence images.
+     > _Connecting JP47 to GND only needs to be GND once after power-on, and then it can be removed_. (<font color=blue>**Recommendation:** always connect JP47 to ground.</font>)
+     >
+     > _Both A1&A2 JP47 and A0 JP30 are grounded to close U51._
+     >
+     > <font color=red>_The pins corresponding to U51 on different boards may not be JP47 or JP30, please check._</font>
+     >
+2. WiFi and BLE use `FC3` UART and OT uses `FC0` UART.
 
-1. Macros releated to Wi-Fi/BLE component.
 
-| coexistence images | CONFIG_WIFI_BLE_COEX_APP | CONFIG_DISABLE_BLE |
-| ------------------ | ------------------------ | ------------------ |
-| Wi-Fi + BLE        | 1                        | 0                  |
+## Build and flash
 
-2. Macors releated to Wi-Fi supplicant
+Prerequisites:
+- CMake (version >=3.24)
+- Ninja (version >=1.12)
+- ARM GCC Toolchain (**only support ARM GCC**)
+- Python3 (version >=3.6)
+
+> **NOTE**: Make sure that the paths of all these tools are set into the Path system variable.
+
+### 1. Downloading repo
+
+i. Download SDK soruce code from NXP SDK github release and checkout to SDK release tag, or download SDK package from NXP SDK builder website. SDK Path: `<path-to-sdk>`
+
+ii. Download the ot-nxp repo. (`<path-to-sdk>` and `<path-to-ot-nxp>` should use different `.west` workspace)
+
+```bash
+$ git clone https://github.com/NXP/ot-nxp.git -b <ot_github_release_tag>
+$ cd <path-to-ot-nxp>
+$ git submodule update --init
+$ python third_party/nxp_matter_support/scripts/update_nxp_sdk.py --platform common
+$ source ./third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/mcux-env.sh
+$ west mcuxsdk-export
+```
+
+iii: Create a soft link to the ot-nxp repo in the MCU SDK
+```bash
+cd <path-to-sdk>/middleware/wireless/coex/third_party/
+
+# NOTE: <path-to-ot-nxp> must be absolute path.
+ln -s <path-to-ot-nxp> ot-nxp
+```
+
+### 2. Build OT CLI library
+
+```bash
+# NOTE: Make sure the paths of arm-gcc tool are set to the Path system variable.
+# For example,
+# export ARMGCC_DIR='<path-to-armgcc>'
+
+$ cd <path-to-ot-nxp>
+
+# For coex_cli OT lib build:
+$ ./script/build_rw612 ot_cli  -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=OFF -DCMAKE_BUILD_TYPE=Debug
+# For coex_wpa_supplicant OT lib build:
+# Note: this coex_wpa_supplicant ot lib only used to compile coex_supplicant_cli with -DCOEX_ENABLE_WIFI=ON, if -DCOEX_ENABLE_WIFI=OFF, should use coex_cli ot lib.
+$ ./script/build_rw612 ot_cli  -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=ON -DCMAKE_BUILD_TYPE=Debug
+```
+
+### 3. Building
+
+Modify `examples/${board}/coex_examples/coex_wifi_edgefast/app_config.h` to generate different coexistence images.
+
+| coexistence images | CONFIG_WIFI_BLE_COEX_APP | CONFIG_DISABLE_BLE | COEX_OT_CLI | Simulation Case          |
+| ------------------ | ---------------- | --------------- | -------------- | ------------------------ |
+| WiFi + BLE         | 1               | 0              | 0             | Matter over WiFi         |
+| WiFi + OT          | 1               | 1              | 1             | /                        |
+| BLE  + OT          | 0               | 0              | 1             | Matter over Thread       |
+| WiFi + BLE + OT    | 1               | 0              | 1             | Matter over WiFi + OT BR |
+
+> NOTE: If building BLE+OT, the ot libs should set `DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS` to `OFF`.
+
+Macors releated to Wi-Fi supplicant
 
 |   Wi-Fi supplicant   | CONFIG_WPA_SUPP_MBEDTLS  |
 | -------------------- | ------------------------ |
 | embedded supplicant  | 0                        |
 | wpa supplicant       | 1(default)               |
 
-3. Enable Monolithic feature
+Enable Monolithic feature
 
 | Component          | CONFIG_MONOLITHIC_WIFI | CONFIG_MONOLITHIC_BLE | CONFIG_MONOLITHIC_BLE_15_4 |
 | ------------------ | ---------------------- | --------------------- | -------------------------- |
 | Wi-Fi              | 1(default)             | NA                    | NA                         |
 | BLE                | NA                     | 1(default)            | NA                         |
+| OT                | NA                     | NA            | 1                         |
 
-If want to disable Wi-Fi monolithic feature, define ```CONFIG_MONOLITHIC_WIFI``` to 0.
-If want to disable BLE monolithic feature, define ```CONFIG_MONOLITHIC_BLE``` to 0.
+If want to disable Wi-Fi monolithic feature, define `CONFIG_MONOLITHIC_WIFI` to 0.
+If want to disable BLE monolithic feature, define `CONFIG_MONOLITHIC_BLE` to 0.
+If want to disable OT or combo monolithic feature, define `CONFIG_MONOLITHIC_BLE_15_4` to 0.
 
-## 2.2 Build
-=============
+### Building coex examples with CMake
+
 
 > flash_debug:
 ```bash
-$ cd mcu-sdk-3.0
-$ west build -b rdrw612bga examples/src/coex_examples/coex_wifi_edgefast --toolchain armgcc --config=flash_debug -d coex_wifi_edgefast
+$ cd <sdk root>
+$ west build -b rdrw612bga examples/coex_examples/coex_wifi_edgefast --toolchain armgcc --config=flash_debug -d coex_wifi_edgefast
 ```
-> flash_release
+
+> flash_release:
 ```bash
-$ cd mcu-sdk-3.0
-$ west build -b rdrw612bga examples/src/coex_examples/coex_wifi_edgefast --toolchain armgcc --config=flash_release -d coex_wifi_edgefast
+$ cd <sdk root>
+$ west build -b rdrw612bga examples/coex_examples/coex_wifi_edgefast --toolchain armgcc --config=flash_release -d coex_wifi_edgefast
 ```
 
 **NOTE:**
@@ -74,13 +133,11 @@ $ west build -b rdrw612bga examples/src/coex_examples/coex_wifi_edgefast --toolc
 > 2. Find coex_wifi_edgefast.elf/coex_wifi_edgefast.bin in coex_wifi_edgefast folder.
 > 3. Only support armgcc to build coex application.
 
-## 2.3 Flash Binaries
-======================
+### 4. Flash Binaries
 
 Flash the image with the following command,
 
 ```bash
-
 # CMD to write CPU3 coex app image to flash in J-link window:
 J-Link> loadbin C:\xxx\coex_wifi_edgefast.bin, 0x08000000
 ```
@@ -89,20 +146,21 @@ J-Link> loadbin C:\xxx\coex_wifi_edgefast.bin, 0x08000000
 
 Monolithic feature is default enabled, this means it's no need to flash binaries manually. 
 
-If disable Wi-Fi or BLE monolithic feature, download firmware manually. 
+If disable Wi-Fi or BLE or OT monolithic feature, download firmware manually. 
 
-SB firmware path: mcu-sdk-3.0/components/conn_fwloader/fw_bin
+SB firmware path: `<sdk root>`/components/conn_fwloader/fw_bin
 
 ```bash
 # CMD to write CPU1 wifi image to flash in J-link window:
 J-Link> loadbin C:\xxx\rw61x_sb_wifi_a2.bin,0x08400000
 # CMD to write CPU2 ble to flash in J-link window:
 J-Link> loadbin C:\xxx\rw61x_sb_ble_a2.bin,0x08540000
+# CMD to write CPU2 combo to flash in J-link window:
+J-Link> loadbin C:\xxx\rw61x_sb_ble_15d4_combo_a2.bin,0x085e0000
 ```
-# 3. Run
+## Run
 
-## 3.1 Prepare the Demo
-========================
+### Prepare the Demo
 
 1. Connect a micro USB cable between the PC host and the MCU-Link USB port (J7) on the board.
 2. Open a serial terminal with the following settings:
@@ -114,8 +172,7 @@ J-Link> loadbin C:\xxx\rw61x_sb_ble_a2.bin,0x08540000
 3. Download the program to the target board.
 4. Launch the debugger in your IDE to begin running the example.
 
-## 3.2 Running the example
-===========================
+### Running the example
 
 The log below shows the output of the coex examples (based on edgefast-shell) in the terminal window:
 
