@@ -66,25 +66,26 @@ $ ./script/build_rw612 ot_cli  -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INS
 
 ### 3. Building
 
-Modify `examples/${board}/coex_examples/coex_wifi_edgefast/app_config.h` to generate different coexistence images.
+Modify `examples/coex_examples/coex_wifi_edgefast/app_config.cmake` to generate different coexistence images.
 
-| coexistence images | CONFIG_WIFI_BLE_COEX_APP | CONFIG_DISABLE_BLE | COEX_OT_CLI | Simulation Case          |
+| coexistence images | CONFIG_WIFI | CONFIG_BLE | CONFIG_OT | Simulation Case          |
 | ------------------ | ---------------- | --------------- | -------------- | ------------------------ |
-| WiFi + BLE         | 1               | 0              | 0             | Matter over WiFi         |
-| WiFi + OT          | 1               | 1              | 1             | /                        |
-| BLE  + OT          | 0               | 0              | 1             | Matter over Thread       |
-| WiFi + BLE + OT    | 1               | 0              | 1             | Matter over WiFi + OT BR |
+| WiFi + BLE         | 1               | 1              | 0             | Matter over WiFi         |
+| WiFi + OT          | 1               | 0              | 1             | /                        |
+| BLE  + OT          | 0               | 1              | 1             | Matter over Thread       |
+| WiFi + BLE + OT    | 1               | 1              | 1             | Matter over WiFi + OT BR |
 
 > NOTE: If building BLE+OT, the ot libs should set `DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS` to `OFF`.
 
 Macors releated to Wi-Fi supplicant
 
-|   Wi-Fi supplicant   | CONFIG_WPA_SUPP_MBEDTLS  |
+|   Wi-Fi supplicant   | CONFIG_WPA_SUPPLICANT  |
 | -------------------- | ------------------------ |
 | embedded supplicant  | 0                        |
 | wpa supplicant       | 1(default)               |
 
 Enable Monolithic feature
+> Modify `examples/${board}/coex_examples/coex_wifi_edgefast/app_config.h`.
 
 | Component          | CONFIG_MONOLITHIC_WIFI | CONFIG_MONOLITHIC_BLE | CONFIG_MONOLITHIC_BLE_15_4 |
 | ------------------ | ---------------------- | --------------------- | -------------------------- |
