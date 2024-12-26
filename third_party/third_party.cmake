@@ -11,6 +11,7 @@ mcux_add_include(
              openthread/src/core
              openthread/examples/platforms
              openthread/third_party/mbedtls
+             third_party/mbedtls/configs
 )
 
 mcux_add_library(
