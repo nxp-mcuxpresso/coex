@@ -30,10 +30,11 @@
 #endif
 
 extern serial_handle_t g_serialHandle;
+extern const struct shell *ctx_shell;
 
 SDK_ALIGN(static uint8_t shell_handle_buffer[SHELL_HANDLE_SIZE], 4);
 static shell_handle_t shell_handle;
-
+struct shell coex_sh;
 
 #if(CONFIG_WIFI_BLE_COEX_APP && (CONFIG_DISABLE_BLE == 0))
 static char s_shellCoexPrompt[32] = "@Coex> ";
@@ -115,6 +116,9 @@ int coex_cli_init(void)
     bt_CommandInit(shell_handle);
 #endif
     printSeparator();
+
+    coex_sh.sh = shell_handle;
+    ctx_shell = &coex_sh;
 
     SHELL_ChangePrompt(shell_handle, (char *)s_shellCoexPrompt);
     return 0;
