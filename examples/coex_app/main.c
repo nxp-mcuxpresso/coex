@@ -9,6 +9,7 @@
 //  Includes
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "fsl_os_abstraction.h"
 #include "fsl_debug_console.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -66,15 +67,6 @@ extern void otSysRunIdleTask(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-
-/* Allocate the memory for the heap. */
-#if defined(configAPPLICATION_ALLOCATED_HEAP) && (configAPPLICATION_ALLOCATED_HEAP)
-#ifndef RW612_SERIES
-APP_FREERTOS_HEAP_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t ucHeap[configTOTAL_HEAP_SIZE];
-#else
-uint8_t __attribute__((section(".heap"))) ucHeap[configTOTAL_HEAP_SIZE];
-#endif /* RW612_SERIES */
-#endif
 
 #ifdef RW612_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)

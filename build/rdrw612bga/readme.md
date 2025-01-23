@@ -137,6 +137,9 @@ $ west build -b rdrw612bga examples/coex_examples/coex_wifi_edgefast --toolchain
 > 1. ```-d coex_wifi_edgefast``` -> Specify the generated project path. Can name it as needed.
 > 2. Find coex_wifi_edgefast.elf/coex_wifi_edgefast.bin in coex_wifi_edgefast folder.
 > 3. Only support armgcc to build coex application.
+> 4. The link option "-Wl,-z -Wl,muldefs" for armgcc in <mcusdk>/arch/arm/configuration/wireless.cmake will be removed. Then multiple
+definition will be treated as error. If build example with OT and have multiple definition errors, please add the link option back for
+temporary fix.
 
 ### 4. Flash Binaries
 
