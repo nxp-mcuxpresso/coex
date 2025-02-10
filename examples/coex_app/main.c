@@ -20,6 +20,20 @@
 #include "fsl_gpio.h"
 #include "fsl_adapter_uart.h"
 
+#include "FreeRTOS.h"
+
+#if !defined(RW612_SERIES)
+#include "wifi.h"
+#include "FreeRTOS.h"
+#include "fsl_sdmmc_host.h"
+#include "app.h"
+#include "fsl_device_registers.h"
+#include "fsl_iomuxc.h"
+#include "fsl_gpc.h"
+#include "fsl_lpuart_edma.h"
+#include "fsl_dmamux.h"
+#endif /* RW612_SERIES */
+
 #ifdef RW612_SERIES
 #if defined(MBEDTLS_NXP_SSSAPI)
 #include "sssapi_mbedtls.h"
@@ -63,6 +77,7 @@ extern void BOARD_InitHardware(void);
 extern void APP_InitServices(void);
 extern void coex_controller_init(void);
 extern void otSysRunIdleTask(void);
+extern int bt_bas_set_battery_level(uint8_t level);
 
 /*******************************************************************************
  * Variables
@@ -90,18 +105,31 @@ static void printSeparator(void)
 
 void task_main(void *param)
 {
+    uint8_t level = 0;
+
     printSeparator();
 #if defined(RW612_SERIES)
     PRINTF("     Initialize RW612 Module\r\n");
+#elif defined(WIFI_IW610_BOARD_MURATA_2LL_M2)
+    PRINTF("     Initialize Nighthwak(IW610) Module\r\n");
 #endif
     printSeparator();
 
     coex_cli_init();
     coex_controller_init();
 
+    vTaskDelay(3000);
+
     while (1)
     {
         vTaskDelay(1000);
+#ifndef RW612_SERIES
+        bt_bas_set_battery_level(level++);
+        if (level > 100)
+        {
+            level = 0;
+        }
+#endif
     }
 }
 
@@ -110,13 +138,16 @@ int main(void)
     BaseType_t result = 0;
 
     BOARD_InitHardware();
+#ifdef RW612_SERIES
     APP_InitServices();
+#endif
 
+    printSeparator();
     PRINTF("        Coex APP\r\n");
     printSeparator();
 
     result =
-        xTaskCreate(task_main, "main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_PRIO, &task_main_handle);
+        xTaskCreate(task_main, "main", configMINIMAL_STACK_SIZE * 8, NULL, tskIDLE_PRIORITY + 1, &task_main_handle);
     assert(pdPASS == result);
 
     vTaskStartScheduler();
@@ -126,8 +157,6 @@ int main(void)
     }
 }
 
-
-#ifdef RW612_SERIES
 void vApplicationIdleHook(void)
 {
 #if(CONFIG_OT_CLI)
@@ -135,6 +164,7 @@ void vApplicationIdleHook(void)
 #endif
 }
 
+#ifdef RW612_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)
 void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime)
 {

@@ -9,22 +9,31 @@
 
 #if(CONFIG_WIFI_BLE_COEX_APP)
 #include "cli.h"
-#include "wlan_bt_fw.h"
 #include "dhcp-server.h"
 #include "wlan.h"
 // #include "wifi_ping.h"
 #include "iperf.h"
 #include <wm_net.h>
+#ifdef RW612_SERIES
 #include "fsl_rtc.h"
-#endif
+#endif /* RW612_SERIES */
+
+#ifndef RW612_SERIES
+#include "fwdnld_intf_abs.h"
+#include "wifi_bt_config.h"
+#include "BT_common.h"
+#include "fsl_common.h"
+#else
+#include "wlan_bt_fw.h"
 
 #if(CONFIG_OT_CLI)
 #include "ot_platform_common.h"
 #include "fwk_platform_coex.h"
 #else
 #include "fwk_platform_ble.h"
-#endif
-
+#endif /* CONFIG_OT_CLI */
+#endif /* RW612_SERIES */
+#endif /* CONFIG_WIFI_BLE_COEX_APP */
 static void printSeparator(void)
 {
     PRINTF("========================================\r\n");
@@ -35,6 +44,7 @@ static struct wlan_network uap_network;
 static struct wlan_network sta_network;
 extern int ping_cli_init(void);
 
+#ifdef RW612_SERIES
 static void dump_set_rtc_time_usage(void)
 {
     (void)PRINTF("Usage: wlan-set-rtc-time <year> <month> <day> <hour> <minute> <second>\r\n");
@@ -79,7 +89,7 @@ static void test_wlan_set_rtc_time(int argc, char **argv)
 
     /* print default time */
     (void)PRINTF("Current datetime: %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n", date.year, date.month, date.day,
-                 date.hour, date.minute, date.second);
+                date.hour, date.minute, date.second);
 }
 
 static void test_wlan_get_rtc_time(int argc, char **argv)
@@ -91,7 +101,7 @@ static void test_wlan_get_rtc_time(int argc, char **argv)
 
     /* print default time */
     (void)PRINTF("Current datetime: %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n", date.year, date.month, date.day,
-                 date.hour, date.minute, date.second);
+                date.hour, date.minute, date.second);
 }
 
 static struct cli_command wlan_prov_commands[] = {
@@ -113,7 +123,7 @@ static int wlan_prov_cli_init(void)
 
     return 0;
 }
-
+#endif
 
 int wlan_event_callback(enum wlan_event_reason reason, void *data)
 {
@@ -178,14 +188,14 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
                 PRINTF("Failed to initialize DHCP Server CLI\r\n");
                 return 0;
             }
-
+#ifdef RW612_SERIES
             ret = wlan_prov_cli_init();
             if (ret != WM_SUCCESS)
             {
                 PRINTF("Failed to initialize PROV CLI\r\n");
                 return 0;
             }
-
+#endif
             PRINTF("CLIs Available:\r\n");
             printSeparator();
             help_command(0, NULL);
@@ -228,7 +238,7 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
                 if (ip6_addr_isvalid(addr.ipv6[i].addr_state))
                 {
                     (void)PRINTF("IPv6 Address: %-13s:\t%s (%s)\r\n", ipv6_addr_type_to_desc((struct net_ipv6_config *)&addr.ipv6[i]),
-                                 inet6_ntoa(addr.ipv6[i].address), ipv6_addr_state_to_desc(addr.ipv6[i].addr_state));
+                                inet6_ntoa(addr.ipv6[i].address), ipv6_addr_state_to_desc(addr.ipv6[i].addr_state));
                 }
             }
             (void)PRINTF("\r\n");
@@ -335,6 +345,155 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
 }
 #endif
 
+#ifndef RW612_SERIES
+#if defined(WIFI_IW610_BOARD_MURATA_2LL_M2)
+#include "sduart_iw610_se.h"
+#endif
+
+#include "sdio.h"
+#include "controller.h"
+#include "firmware_dnld.h"
+#include "fsl_adapter_uart.h"
+#include "fsl_os_abstraction.h"
+#include "controller_hci_uart.h"
+
+/*******************************************************************************
+* Definitions
+******************************************************************************/
+#define BT_OP(ogf, ocf) ((ocf) | ((ogf) << 10))
+#define BT_OGF_VS       0x3f
+
+/* Weak function. */
+#if defined(__GNUC__)
+#define __WEAK_FUNC __attribute__((weak))
+#elif defined(__ICCARM__)
+#define __WEAK_FUNC __weak
+#elif defined(__CC_ARM) || defined(__ARMCC_VERSION)
+#define __WEAK_FUNC __attribute__((weak))
+#endif
+
+
+/*******************************************************************************
+* Prototypes
+******************************************************************************/
+static void coex_controller_hci_uart_init(void);
+static UART_HANDLE_DEFINE(s_controllerHciUartHandle);
+
+/*******************************************************************************
+* Code
+******************************************************************************/
+
+__WEAK_FUNC int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config);
+
+void coex_controller_init(void)
+{
+#ifndef CONTROLLER_INIT_ESCAPE
+    int result;
+    (void) result;
+    BOARD_WIFI_BT_Enable(true);
+#if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
+    /* BTonly firmware download over UART */
+    BOARD_WIFI_BT_Enable(true);
+    void *intf = uart_init_interface();
+    assert(intf != NULL);
+    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
+    assert(result == FWDNLD_INTF_SUCCESS);
+#endif
+    /* Combo firmware download over SDIO */
+    result = wlan_init(wlan_fw_bin, wlan_fw_bin_len);  
+    assert(API_SUCCESS == result);
+    result = wlan_start(wlan_event_callback);
+    assert(0 == result);
+#endif
+}
+
+/* Initialize the platform */
+void single_controller_init(void)
+{
+#ifndef CONTROLLER_INIT_ESCAPE
+    int result;
+    (void) result;
+#if (CONFIG_BT_IND_DNLD)
+    /* BTonly firmware download over UART */
+    void *intf = uart_init_interface();
+    assert(intf != NULL);
+    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
+    assert(result == FWDNLD_INTF_SUCCESS);
+#endif /*CONFIG_BT_IND_DNLD*/
+#endif /*CONTROLLER_INIT_ESCAPE*/
+    coex_controller_hci_uart_init();
+}
+
+__WEAK_FUNC int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config)
+{
+    return -1;
+}
+
+static void coex_controller_hci_uart_init(void)
+{
+    uint16_t *opcode;
+    uint8_t *param_len;
+    hal_uart_config_t config;
+    controller_hci_uart_config_t hciUartConfig;
+    uint8_t sendingBuffer[8];
+    uint8_t recvBuffer[8];
+    hal_uart_status_t error;
+    memset(sendingBuffer, 0, sizeof(sendingBuffer));
+    memset(recvBuffer, 0, sizeof(recvBuffer));
+    memset(&hciUartConfig, 0, sizeof(hciUartConfig));
+    memset(&config, 0, sizeof(config));
+#if (defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
+    /*delay to make sure controller is ready to receive command*/
+    OSA_TimeDelay(100);
+#endif
+    if (0 != controller_hci_uart_get_configuration(&hciUartConfig))
+    {
+        return;
+    }
+    if (hciUartConfig.runningBaudrate == hciUartConfig.defaultBaudrate)
+    {
+        return;
+    }
+    /* Set the HCI-UART Configuration parameters */
+    config.srcClock_Hz  = hciUartConfig.clockSrc;
+    config.baudRate_Bps = hciUartConfig.defaultBaudrate;
+    config.parityMode   = kHAL_UartParityDisabled;
+    config.stopBitCount = kHAL_UartOneStopBit;
+    config.enableRx     = 1;
+    config.enableTx     = 1;
+    config.instance     = hciUartConfig.instance;
+    config.enableRxRTS  = hciUartConfig.enableRxRTS;
+    config.enableTxCTS  = hciUartConfig.enableTxCTS;
+#if (defined(HAL_UART_ADAPTER_FIFO) && (HAL_UART_ADAPTER_FIFO > 0u))
+    config.txFifoWatermark = 0U;
+    config.rxFifoWatermark = 0U;
+#endif
+
+  /* Initialize UART with Adapter */
+    error = HAL_UartInit((hal_uart_handle_t)s_controllerHciUartHandle, &config);
+    /* Check if Assert or Log and return? */
+    assert(kStatus_HAL_UartSuccess);
+    sendingBuffer[0]                   = 0x01;
+    opcode                             = (uint16_t *)&sendingBuffer[1];
+    param_len                          = &sendingBuffer[3];
+    *opcode                            = (uint16_t)BT_OP(BT_OGF_VS, 0x09);
+    *param_len                         = sizeof(hciUartConfig.runningBaudrate);
+    *((uint32_t *)(&sendingBuffer[4])) = hciUartConfig.runningBaudrate;
+    /*delay to make sure controller is ready to receive command*/
+    OSA_TimeDelay(60);
+    error = HAL_UartSendBlocking((hal_uart_handle_t)s_controllerHciUartHandle, &sendingBuffer[0], 8);
+    assert(kStatus_HAL_UartSuccess == error);
+    error = HAL_UartReceiveBlocking((hal_uart_handle_t)s_controllerHciUartHandle, &recvBuffer[0], 7);
+    assert(kStatus_HAL_UartSuccess == error);
+    assert(0 == recvBuffer[7]);
+    OSA_TimeDelay(500);
+    error = HAL_UartDeinit((hal_uart_handle_t)s_controllerHciUartHandle);
+    assert(kStatus_HAL_UartSuccess == error);
+    (void)error;
+}
+
+#else
+
 #if(CONFIG_OT_CLI)
 extern void appOtStart(int argc, char *argv[]);
 #endif
@@ -354,15 +513,15 @@ void coex_controller_init(void)
     assert(0 == result);
 
     vTaskDelay(1500);
-#endif
+#endif /* CONFIG_WIFI_BLE_COEX_APP */
 
 #if(CONFIG_OT_CLI)
     /* Initialize 15.4+BLE combo controller first
-     * Any other attemps to init a 15.4 or BLE single mode will be ignored
-     * For BLE, ethermind calls controller_init which calls PLATFORM_InitBle which calls PLATFORM_InitControllers(connBle_c)
-     * As we already initialized the controller in combo mode here, the PLATFORM_InitControllers(connBle_c) call does nothing
-     * Same applies for PLATFORM_InitOt which calls PLATFORM_InitControllers(conn802_15_4_c)
-     * For RW61x, 15.4/BLE combo image must be flashed at 15.4 firmware address Z154_IMAGE_A_OFFSET (0x85e0000) */
+    * Any other attemps to init a 15.4 or BLE single mode will be ignored
+    * For BLE, ethermind calls controller_init which calls PLATFORM_InitBle which calls PLATFORM_InitControllers(connBle_c)
+    * As we already initialized the controller in combo mode here, the PLATFORM_InitControllers(connBle_c) call does nothing
+    * Same applies for PLATFORM_InitOt which calls PLATFORM_InitControllers(conn802_15_4_c)
+    * For RW61x, 15.4/BLE combo image must be flashed at 15.4 firmware address Z154_IMAGE_A_OFFSET (0x85e0000) */
     PLATFORM_InitControllers(conn802_15_4_c | connBle_c);
 
 #if(CONFIG_WIFI_BLE_COEX_APP == 0)
@@ -376,5 +535,4 @@ void coex_controller_init(void)
     PLATFORM_InitBle();
 #endif
 }
-
-
+#endif /* RW612_SERIES */

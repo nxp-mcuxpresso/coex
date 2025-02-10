@@ -24,6 +24,12 @@
 #include "fsl_shell.h"
 #include "fsl_debug_console.h"
 #include "shell_bt.h"
+
+#if !defined(RW612_SERIES)
+#include "db_gen.h"
+#include "host_msd_fatfs.h"
+#endif
+
 #include "coex_shell.h"
 #if(CONFIG_WIFI_BLE_COEX_APP)
 #include "cli.h"
