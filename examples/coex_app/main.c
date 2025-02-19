@@ -24,7 +24,6 @@
 
 #if !defined(RW612_SERIES)
 #include "wifi.h"
-#include "FreeRTOS.h"
 #include "fsl_sdmmc_host.h"
 #include "app.h"
 #include "fsl_device_registers.h"
@@ -62,7 +61,6 @@
 #endif /* APP_LOWPOWER_ENABLED */
 #endif /* RW612_SERIES */
 
-#include "app_config.h"
 #include "coex_shell.h"
 
 /*******************************************************************************
@@ -111,14 +109,16 @@ void task_main(void *param)
 #if defined(RW612_SERIES)
     PRINTF("     Initialize RW612 Module\r\n");
 #elif defined(WIFI_IW610_BOARD_MURATA_2LL_M2)
-    PRINTF("     Initialize Nighthwak(IW610) Module\r\n");
+    PRINTF("     Initialize Nighthwak-2LL (IW610) M2 Module\r\n");
 #endif
     printSeparator();
 
     coex_cli_init();
     coex_controller_init();
 
+#ifndef RW612_SERIES
     vTaskDelay(3000);
+#endif
 
     while (1)
     {
@@ -147,7 +147,7 @@ int main(void)
     printSeparator();
 
     result =
-        xTaskCreate(task_main, "main", configMINIMAL_STACK_SIZE * 8, NULL, tskIDLE_PRIORITY + 1, &task_main_handle);
+        xTaskCreate(task_main, "main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_PRIO, &task_main_handle);
     assert(pdPASS == result);
 
     vTaskStartScheduler();
@@ -157,12 +157,14 @@ int main(void)
     }
 }
 
+#if CONFIG_COEX_APP
 void vApplicationIdleHook(void)
 {
 #if(CONFIG_OT_CLI)
     otSysRunIdleTask();
 #endif
 }
+#endif
 
 #ifdef RW612_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)

@@ -73,7 +73,7 @@
 
 #define TCPIP_THREAD_NAME      "tcp/ip"
 #define TCPIP_THREAD_STACKSIZE 1024
-#define TCPIP_THREAD_PRIO      2
+#define TCPIP_THREAD_PRIO      (configMAX_PRIORITIES - 3)
 #ifdef CONFIG_NETWORK_HIGH_PERF
 #define TCPIP_MBOX_SIZE 96
 #else
@@ -301,7 +301,7 @@
 /**
  * PBUF_POOL_SIZE: the number of buffers in the pbuf pool.
  */
-#define PBUF_POOL_SIZE 80
+#define PBUF_POOL_SIZE 40
 
 /*
    ----------------------------------

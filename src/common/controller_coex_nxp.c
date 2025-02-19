@@ -14,17 +14,27 @@
 // #include "wifi_ping.h"
 #include "iperf.h"
 #include <wm_net.h>
-#ifdef RW612_SERIES
-#include "fsl_rtc.h"
-#endif /* RW612_SERIES */
+#include "wlan_bt_fw.h"
 
 #ifndef RW612_SERIES
 #include "fwdnld_intf_abs.h"
 #include "wifi_bt_config.h"
 #include "BT_common.h"
 #include "fsl_common.h"
+
+#include "sdio.h"
+#include "controller.h"
+#include "firmware_dnld.h"
+#include "fsl_adapter_uart.h"
+#if (CONFIG_BT_IND_DNLD)
+#include "fw_loader_uart.h"
+#endif /* CONFIG_BT_IND_DNLD */
+// #include "fsl_os_abstraction.h"
+#include "controller_hci_uart.h"
+
 #else
-#include "wlan_bt_fw.h"
+
+#include "fsl_rtc.h"
 
 #if(CONFIG_OT_CLI)
 #include "ot_platform_common.h"
@@ -346,16 +356,6 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
 #endif
 
 #ifndef RW612_SERIES
-#if defined(WIFI_IW610_BOARD_MURATA_2LL_M2)
-#include "sduart_iw610_se.h"
-#endif
-
-#include "sdio.h"
-#include "controller.h"
-#include "firmware_dnld.h"
-#include "fsl_adapter_uart.h"
-#include "fsl_os_abstraction.h"
-#include "controller_hci_uart.h"
 
 /*******************************************************************************
 * Definitions
@@ -366,12 +366,7 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
 /* Weak function. */
 #if defined(__GNUC__)
 #define __WEAK_FUNC __attribute__((weak))
-#elif defined(__ICCARM__)
-#define __WEAK_FUNC __weak
-#elif defined(__CC_ARM) || defined(__ARMCC_VERSION)
-#define __WEAK_FUNC __attribute__((weak))
 #endif
-
 
 /*******************************************************************************
 * Prototypes
@@ -385,6 +380,42 @@ static UART_HANDLE_DEFINE(s_controllerHciUartHandle);
 
 __WEAK_FUNC int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config);
 
+#if 0
+void coex_controller_init(void)
+{
+#ifndef CONTROLLER_INIT_ESCAPE
+    int result;
+    (void) result;
+    BOARD_WIFI_BT_Enable(true);
+    
+#if (!CONFIG_DISABLE_BLE)
+#if (CONFIG_BT_IND_DNLD)
+    (void)PRINTF("Download BT FW\r\n");
+    /* BTonly firmware download over UART */
+    void *intf = uart_init_interface();
+    assert(intf != NULL);
+    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
+    assert(result == FWDNLD_INTF_SUCCESS);
+
+    coex_controller_hci_uart_init();
+#endif /* CONFIG_BT_IND_DNLD */
+#endif /* !CONFIG_DISABLE_BLE */
+
+#if (CONFIG_WIFI_BLE_COEX_APP)
+#if (CONFIG_WIFI_IND_DNLD)
+    (void)PRINTF("Download WLAN FW\r\n");
+    /* WLAN firmware download over SDIO */
+    result = wlan_init(wlan_fw_bin, wlan_fw_bin_len);
+    assert(API_SUCCESS == result);
+    result = wlan_start(wlan_event_callback);
+    assert(0 == result);
+#endif /* CONFIG_WIFI_IND_DNLD */
+#endif /* CONFIG_WIFI_BLE_COEX_APP */
+
+#endif
+}
+#endif
+
 void coex_controller_init(void)
 {
 #ifndef CONTROLLER_INIT_ESCAPE
@@ -393,7 +424,6 @@ void coex_controller_init(void)
     BOARD_WIFI_BT_Enable(true);
 #if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
     /* BTonly firmware download over UART */
-    BOARD_WIFI_BT_Enable(true);
     void *intf = uart_init_interface();
     assert(intf != NULL);
     result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
@@ -405,23 +435,6 @@ void coex_controller_init(void)
     result = wlan_start(wlan_event_callback);
     assert(0 == result);
 #endif
-}
-
-/* Initialize the platform */
-void single_controller_init(void)
-{
-#ifndef CONTROLLER_INIT_ESCAPE
-    int result;
-    (void) result;
-#if (CONFIG_BT_IND_DNLD)
-    /* BTonly firmware download over UART */
-    void *intf = uart_init_interface();
-    assert(intf != NULL);
-    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
-    assert(result == FWDNLD_INTF_SUCCESS);
-#endif /*CONFIG_BT_IND_DNLD*/
-#endif /*CONTROLLER_INIT_ESCAPE*/
-    coex_controller_hci_uart_init();
 }
 
 __WEAK_FUNC int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config)
@@ -442,7 +455,10 @@ static void coex_controller_hci_uart_init(void)
     memset(recvBuffer, 0, sizeof(recvBuffer));
     memset(&hciUartConfig, 0, sizeof(hciUartConfig));
     memset(&config, 0, sizeof(config));
-#if (defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
+#if (defined(WIFI_IW416_BOARD_AW_AM457_USD) || defined(WIFI_IW416_BOARD_AW_AM510_USD) ||      \
+    defined(WIFI_IW416_BOARD_AW_AM510MA) || defined(WIFI_IW416_BOARD_MURATA_1XK_USD) ||      \
+    defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || defined(WIFI_88W8987_BOARD_MURATA_1ZM_USD) || \
+    defined(WIFI_88W8987_BOARD_MURATA_1ZM_M2) || defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
     /*delay to make sure controller is ready to receive command*/
     OSA_TimeDelay(100);
 #endif
@@ -492,7 +508,7 @@ static void coex_controller_hci_uart_init(void)
     (void)error;
 }
 
-#else
+#else /* RW612_SERIES */
 
 #if(CONFIG_OT_CLI)
 extern void appOtStart(int argc, char *argv[]);
