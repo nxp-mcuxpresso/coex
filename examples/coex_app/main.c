@@ -117,11 +117,17 @@ void task_main(void *param)
     PRINTF("     Initialize RW612 Module\r\n");
 #elif defined(WIFI_IW610_BOARD_MURATA_2LL_M2)
     PRINTF("     Initialize Nighthwak-2LL (IW610) M2 Module\r\n");
+#elif defined(WIFI_IW612_BOARD_MURATA_2EL_USD)
+    PRINTF("     Initialize Firecrest-2EL (IW612) USD Module\r\n");
+#elif defined(WIFI_IW612_BOARD_MURATA_2EL_M2)
+    PRINTF("     Initialize Firecrest-2EL (IW612) Direct-M2 Module\r\n");
 #endif
     printSeparator();
 
     coex_cli_init();
     coex_controller_init();
+    PRINTF("host init done\r\n");
+    /* wait for interface up */
 
 #ifndef RW612_SERIES
     vTaskDelay(3000);
