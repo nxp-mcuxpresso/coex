@@ -109,6 +109,10 @@ SECTIONS
         */fsl_flexspi.c.obj
     ) .text)                 /* .text sections (code) */
     *(EXCLUDE_FILE(
+        /* Exclude flash and frequently executed functions from XIP */
+        */fsl_adapter_flexspi_nor_flash.c.obj
+        */mflash_drv.c.obj
+        */fsl_flexspi.c.obj
         *queue.c.obj
         *tcp_out.c.obj
         *mlan_sdio.c.obj
