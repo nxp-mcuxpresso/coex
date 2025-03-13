@@ -25,6 +25,10 @@
 #endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD */
 #else
 #include "fsl_rtc.h"
+#endif /* RW612_SERIES */
+#endif /* CONFIG_WIFI_BLE_COEX_APP */
+
+#ifdef RW612_SERIES
 #if(CONFIG_OT_CLI)
 #include "ot_platform_common.h"
 #include "fwk_platform_coex.h"
@@ -32,7 +36,7 @@
 #include "fwk_platform_ble.h"
 #endif /* CONFIG_OT_CLI */
 #endif /* RW612_SERIES */
-#endif /* CONFIG_WIFI_BLE_COEX_APP */
+
 static void printSeparator(void)
 {
     PRINTF("========================================\r\n");
