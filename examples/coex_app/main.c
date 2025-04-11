@@ -88,8 +88,8 @@ extern int bt_bas_set_battery_level(uint8_t level);
 
 #ifdef RW612_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)
-/* Tickless idle is allowed by default but can be disabled runtime with APP_SetTicklessIdle */
-static int ticklessIdleAllowed = 1;
+/* Tickless idle is not allowed by default but can be enable runtime with APP_SetTicklessIdle */
+static int ticklessIdleAllowed = 0;
 #endif
 #endif
 
@@ -127,23 +127,25 @@ void task_main(void *param)
     coex_cli_init();
     coex_controller_init();
     PRINTF("host init done\r\n");
-    /* wait for interface up */
 
 #ifndef RW612_SERIES
+    /* wait for interface up */
     vTaskDelay(3000);
-#endif
 
     while (1)
     {
         vTaskDelay(1000);
-#ifndef RW612_SERIES
         bt_bas_set_battery_level(level++);
         if (level > 100)
         {
             level = 0;
         }
-#endif
+
     }
+#else
+    /* Initialization job is complete, destroy the task */
+    vTaskDelete(NULL);
+#endif
 }
 
 int main(void)
@@ -225,7 +227,6 @@ void APP_SetTicklessIdle(bool enable)
         ticklessIdleAllowed--;
     }
 }
-
 #endif /* configUSE_TICKLESS_IDLE */
 #endif /* RW612_SERIES*/
 

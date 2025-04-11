@@ -96,6 +96,64 @@ static void wifi_CommandInit(shell_handle_t shell)
 }
 #endif
 
+#if APP_LOWPOWER_ENABLED
+extern void APP_SetTicklessIdle(bool enable);
+extern void APP_ConfigureNextLowPowerMode(uint8_t nextMode, uint32_t timeMs);
+bool pm_state = false;
+
+static int cmd_pm_enable(const struct shell *sh, size_t argc, char *argv[])
+{
+    uint8_t constraint = 0U;
+    uint32_t time_ms = 0xffffffffUL;
+
+    if (argc > 3)
+        return -EINVAL;
+
+    if (pm_state == false)
+    {
+        constraint = atoi(argv[1]);
+        if (argc == 3)
+        {
+            time_ms = atoi(argv[2]);
+        }
+
+        APP_ConfigureNextLowPowerMode(constraint, time_ms);
+        APP_SetTicklessIdle(true);
+
+        pm_state = true;
+    }
+
+    return 0;
+}
+
+static int cmd_pm(const struct shell *sh, size_t argc, char **argv)
+{
+    if (argc == 1) {
+        shell_help(sh);
+        return SHELL_CMD_HELP_PRINTED;
+    }
+
+    shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+
+    return -EINVAL;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(pm_cmds,
+    SHELL_CMD_ARG(enable, NULL, "<constraint: 1-PM1, 2-PM2, 3-PM3> [time (ms)]", cmd_pm_enable, 2, 1),
+    SHELL_SUBCMD_SET_END
+);
+
+SHELL_CMD_REGISTER(pm, &pm_cmds, "Power Manager shell commands", cmd_pm);
+
+static void pm_CommandInit(shell_handle_t shell)
+{
+    if ((shell_status_t)kStatus_Success != SHELL_RegisterCommand(shell, &g_shellCommandpm))
+    {
+        (void)PRINTF(shell, "Shell register command %s failed!", g_shellCommandpm.pcCommand);
+    }
+}
+#endif
+
 static void printSeparator(void)
 {
     PRINTF("========================================\r\n");
@@ -109,6 +167,12 @@ int coex_cli_init(void)
         (void)PRINTF("Coex shell initialization failed!\r\n");
         return -1;
     }
+
+#if(APP_LOWPOWER_ENABLED)
+    printSeparator();
+    (void)PRINTF("Power Manager shell initialization\r\n");
+    pm_CommandInit(shell_handle);
+#endif
 
 #if(CONFIG_WIFI_BLE_COEX_APP)
     printSeparator();

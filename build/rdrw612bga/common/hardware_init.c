@@ -70,6 +70,7 @@ void BOARD_InitHardware(void)
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitDebugConsole();
+    BOARD_InitSleepPinConfig();
 #if(CONFIG_OT_CLI)
     BOARD_InitOtConsole();
 #endif
