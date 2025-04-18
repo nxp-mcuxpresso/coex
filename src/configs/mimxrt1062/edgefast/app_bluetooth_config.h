@@ -43,6 +43,7 @@
 #undef CONFIG_BT_PBAP_PSE
 #undef CONFIG_BT_RFCOMM
 #endif /* #ifndef CONFIG_BT_CLASSIC */
+#define CONFIG_BLE_ADV_REPORT_BUFFER_FILTER 1
 #endif /* #ifdef WIFI_IW610_BOARD_MURATA_2LL_M2 */
 
 /* To enable the BT IND Reset. */
