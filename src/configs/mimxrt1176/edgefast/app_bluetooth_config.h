@@ -9,12 +9,42 @@
 #include "edgefast_bluetooth_audio_config.h"
 #define FLASH_ADAPTER_SIZE 0x10000
 
-#ifdef WIFI_IW612_BOARD_MURATA_2EL_M2
+#if (defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
 #include "wifi_bt_module_config.h"
 #include "wifi_config.h"
 #else
 #error The transceiver module is unsupported
 #endif
+
+#ifdef WIFI_IW610_BOARD_MURATA_2LL_M2
+#undef CONFIG_BT_CLASSIC
+#undef CONFIG_BT_IND_RESET
+#undef CONFIG_BT_IND_RESET_OOB
+
+#ifndef CONFIG_BT_CLASSIC
+#undef CONFIG_BT_A2DP
+#undef CONFIG_BT_A2DP_CP_SERVICE
+#undef CONFIG_BT_A2DP_DR_SERVICE
+#undef CONFIG_BT_A2DP_SINK
+#undef CONFIG_BT_A2DP_SOURCE
+#undef CONFIG_BT_AVRCP
+#undef CONFIG_BT_AVRCP_BROWSING
+#undef CONFIG_BT_AVRCP_COVER_ART
+#undef CONFIG_BT_AVRCP_COVER_ART_INITIATOR
+#undef CONFIG_BT_AVRCP_COVER_ART_RESPONDER
+#undef CONFIG_BT_AVRCP_CT
+#undef CONFIG_BT_AVRCP_TG
+#undef CONFIG_BT_HFP_HF
+#undef CONFIG_BT_MAP
+#undef CONFIG_BT_MAP_MCE
+#undef CONFIG_BT_MAP_MSE
+#undef CONFIG_BT_PBAP
+#undef CONFIG_BT_PBAP_PCE
+#undef CONFIG_BT_PBAP_PSE
+#undef CONFIG_BT_RFCOMM
+#endif /* #ifndef CONFIG_BT_CLASSIC */
+#define CONFIG_BLE_ADV_REPORT_BUFFER_FILTER 1
+#endif /* #ifdef WIFI_IW610_BOARD_MURATA_2LL_M2 */
 
 /* To enable the BT IND Reset. */
 /* If ID Reset is enabled, use BT UART to download controller firmware. */
@@ -401,3 +431,36 @@
 #define SHELL_MAX_ARGS    20
 #endif
 
+#if CONFIG_BLE_SLIM
+
+#if CONFIG_BT_AUTO_DATA_LEN_UPDATE
+#undef CONFIG_BT_AUTO_DATA_LEN_UPDATE
+#define CONFIG_BT_AUTO_DATA_LEN_UPDATE 0
+#endif
+
+#if CONFIG_BT_AUTO_PHY_UPDATE
+#undef CONFIG_BT_AUTO_PHY_UPDATE
+#define CONFIG_BT_AUTO_PHY_UPDATE 0
+#endif
+
+#if CONFIG_BT_SNOOP
+#undef CONFIG_BT_SNOOP
+#define CONFIG_BT_SNOOP 0
+#endif
+
+#if CONFIG_BT_MAX_PAIRED
+#undef CONFIG_BT_MAX_PAIRED
+#define CONFIG_BT_MAX_PAIRED 1
+#endif
+
+#if CONFIG_BT_USER_DATA_LEN_UPDATE
+#undef CONFIG_BT_USER_DATA_LEN_UPDATE
+#define CONFIG_BT_USER_DATA_LEN_UPDATE 0
+#endif
+
+#if CONFIG_BT_USER_PHY_UPDATE
+#undef CONFIG_BT_USER_PHY_UPDATE
+#define CONFIG_BT_USER_PHY_UPDATE 0
+#endif
+
+#endif
