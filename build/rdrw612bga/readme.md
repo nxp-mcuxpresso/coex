@@ -77,10 +77,10 @@ ln -s <path-to-ot-nxp> ot-nxp
 
 $ cd <path-to-ot-nxp>
 
-# For coex_cli OT lib build:
+# For embedded supplicant OT lib build:
 $ ./script/build_rw612 ot_cli  -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=OFF -DCMAKE_BUILD_TYPE=Debug
-# For coex_wpa_supplicant OT lib build:
-# Note: this coex_wpa_supplicant ot lib only used to compile coex_supplicant_cli with -DCOEX_ENABLE_WIFI=ON, if -DCOEX_ENABLE_WIFI=OFF, should use coex_cli ot lib.
+# For wpa supplicant OT lib build:
+# NOTE: this wpa supplicant ot lib only used to compile with -DCOEX_ENABLE_WIFI=ON and -DCONFIG_WPA_SUPPLICANT=ON.
 $ ./script/build_rw612 ot_cli  -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=ON -DCMAKE_BUILD_TYPE=Debug
 ```
 
