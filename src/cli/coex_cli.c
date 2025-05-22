@@ -44,6 +44,15 @@ int coex_cli_init()
     {
         return -1;
     }
+
+#if CONFIG_COEX_ENABLE_PM_MENU
+    if (!pm_cli_init())
+    {
+        PRINTF("Failed to initialize power manager cli.\r\n");
+        return -1;
+    }
+#endif
+
     return 0;
 }
 
@@ -191,6 +200,7 @@ static void pm_menu(void)
     char *delim = " ";
     int j = 1;
     int ret = 0;
+    struct pm_command *pm_cmd = NULL;
 
     PRINTF("Enter Power manager commands\n");
 
@@ -216,8 +226,18 @@ static void pm_menu(void)
             cmd_list[j++]=temp;
         }
 
-        PRINTF("poer manager commands: %s\n", cmd_buf);
-        pm_cmd(cmd_buf, j, cmd_list);
+        pm_cmd = looup_pm_cmd(cmd_list[0], strlen(cmd_list[0]));
+        if(pm_cmd != NULL)
+        {
+            PRINTF("power manager commands: %s\n", cmd_list[0]);
+            pm_cmd->function(j, cmd_list);
+
+        }
+        else
+        {
+            PRINTF("Invaild pm command.\n");
+            PRINTF("Enter help to check supported pm commands.\n");
+        }
     }
 }
 #endif

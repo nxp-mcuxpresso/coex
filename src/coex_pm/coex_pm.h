@@ -13,9 +13,34 @@
 #define __COEX_PM_H__
 
 /***********************************************************************************************************************
+ * Structs
+ **********************************************************************************************************************/
+
+ #define PM_MAX_COMMANDS 5
+
+/** Structure for registering CLI commands */
+struct pm_command
+{
+    /** The name of the CLI command */
+    const char *name;
+    /** The help text associated with the command */
+    const char *help;
+    /** The function that should be invoked for this command. */
+    void (*function)(int argc, char **argv);
+};
+
+typedef struct
+{
+    struct pm_command *commands[PM_MAX_COMMANDS];
+    unsigned int num_commands;
+
+} pm_cli;
+
+/***********************************************************************************************************************
  * Definitions
  **********************************************************************************************************************/
-void pm_cmd(char *command, int argc, char **argv);
+struct pm_command *looup_pm_cmd(char *name, int len);
+bool pm_cli_init(void);
 void APP_LPTimerCreate(void);
 
 #endif
