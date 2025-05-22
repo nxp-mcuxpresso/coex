@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  * The BSD-3-Clause license can be found at https://spdx.org/licenses/BSD-3-Clause.html
@@ -13,8 +13,11 @@
 #include "fsl_debug_console.h"
 #include "cli.h"
 #include "coex_cli.h"
-#if(CONFIG_COEX_ENABLE_WIFI)
+#if CONFIG_COEX_ENABLE_WIFI_MENU
 #include "wlan.h"
+#endif
+#if CONFIG_COEX_ENABLE_PM_MENU
+#include "coex_pm.h"
 #endif
 
 #define CMD_BUF_SIZE 512
@@ -89,7 +92,7 @@ retry:
 /*!
  * @brief Function to start MAIN BT MENU.
  */
-#if (!CONFIG_DISABLE_BLE)
+#if CONFIG_COEX_ENABLE_BLE_MENU
 extern int appl_main (int argc, char **argv);
 static void bt_menu(void)
 {
@@ -100,7 +103,7 @@ static void bt_menu(void)
 /*!
  * @brief Function to start zigbee menu.
  */
-#if(CONFIG_COEX_ENABLE_ZIGBEE)
+#if CONFIG_COEX_ENABLE_ZIGBEE_MENU
 extern void vProcessCommand(char *tmp);
 static void zigbee_menu(void)
 {
@@ -122,43 +125,9 @@ static void zigbee_menu(void)
 }
 #endif
 
-#if(CONFIG_COEX_ENABLE_WIFI)
-void execute_commnd(char *wlan_command,char** args,int j);
-void wifi_cli(void)
-{
-    char* cmd_list[20] = {0};
-    char *wlantemp = NULL;
-    char *psave = NULL;
-    char *delim = " ";
-    int j=1;
-    int ret = 0;
+#if CONFIG_COEX_ENABLE_WIFI_MENU
 
-    PRINTF("Enter WiFi commands\n");
-
-    while (1)
-    {
-        ret = coex_console_input();
-        if (ret == -1)
-        {
-            return;
-        }
-        wlantemp=strtok_r(cmd_buf, delim, &psave);
-        j = 1;
-        cmd_list[0]=cmd_buf;
-        while(1)
-        {
-            wlantemp=strtok_r(NULL, delim, &psave);
-            if(wlantemp == NULL)
-                break;
-            cmd_list[j++]=wlantemp;
-        }
-
-        PRINTF("wifi commands: %s\n", cmd_buf);
-        execute_commnd(cmd_buf, cmd_list, j);
-    }
-}
-
-void execute_commnd(char *wlan_command,char** args,int j)
+static void execute_commnd(char *wlan_command, int argv, char** argc)
 {
     osa_status_t status;
     (void)status;
@@ -171,7 +140,85 @@ void execute_commnd(char *wlan_command,char** args,int j)
     if (command == NULL)
         PRINTF("Invalid Command");
     else
-        command->function(j, args);
+        command->function(argv, argc);
+}
+
+void wifi_cli(void)
+{
+    char* cmd_list[20] = {0};
+    char *wlantemp = NULL;
+    char *psave = NULL;
+    char *delim = " ";
+    int j = 1;
+    int ret = 0;
+
+    PRINTF("Enter WiFi commands\n");
+
+    while (1)
+    {
+        ret = coex_console_input();
+        if (ret == -1)
+        {
+            return;
+        }
+
+        wlantemp = strtok_r(cmd_buf, delim, &psave);
+        j = 1;
+        cmd_list[0] = cmd_buf;
+
+        while(1)
+        {
+            wlantemp = strtok_r(NULL, delim, &psave);
+
+            if(wlantemp == NULL)
+                break;
+
+            cmd_list[j++]=wlantemp;
+        }
+
+        PRINTF("wifi commands: %s\n", cmd_buf);
+        execute_commnd(cmd_buf, j, cmd_list);
+    }
+}
+#endif
+
+#if CONFIG_COEX_ENABLE_PM_MENU
+static void pm_menu(void)
+{   
+    char* cmd_list[20] = {0};
+    char *temp = NULL;
+    char *psave = NULL;
+    char *delim = " ";
+    int j = 1;
+    int ret = 0;
+
+    PRINTF("Enter Power manager commands\n");
+
+    while (1)
+    {
+        ret = coex_console_input();
+        if (ret == -1)
+        {
+            return;
+        }
+
+        temp = strtok_r(cmd_buf, delim, &psave);
+        j = 1;
+        cmd_list[0] = cmd_buf;
+
+        while(1)
+        {
+            temp = strtok_r(NULL, delim, &psave);
+
+            if(temp == NULL)
+                break;
+
+            cmd_list[j++]=temp;
+        }
+
+        PRINTF("poer manager commands: %s\n", cmd_buf);
+        pm_cmd(cmd_buf, j, cmd_list);
+    }
 }
 #endif
 
@@ -187,14 +234,17 @@ typedef struct
 
 menu_item_t menuItems[] = {
     {'0',coex_menuPrint, "Coex menu print"},
-#if(CONFIG_COEX_ENABLE_ZIGBEE)
+#if(CONFIG_COEX_ENABLE_ZIGBEE_MENU)
     {'z', zigbee_menu, "Zigbee MAIN MENU"},
 #endif
-#if (!CONFIG_DISABLE_BLE)
+#if CONFIG_COEX_ENABLE_BLE_MENU
     {'b', bt_menu, "BT MAIN MENU"},
 #endif
-#if(CONFIG_COEX_ENABLE_WIFI)
+#if CONFIG_COEX_ENABLE_WIFI_MENU
     {'w',wifi_cli, "Wifi Cli"},
+#endif
+#if CONFIG_COEX_ENABLE_PM_MENU
+    {'p',pm_menu, "Power manager MAIN MENU"},
 #endif
     {0, NULL, NULL},
 };
