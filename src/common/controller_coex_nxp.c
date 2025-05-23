@@ -354,13 +354,8 @@ void coex_controller_init(void)
     int result;
     (void) result;
 #if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
+    BOARD_WIFI_BT_Enable(false);
     BOARD_WIFI_BT_Enable(true);
-    /* BT only firmware download over UART */
-    (void)PRINTF("Download BT FW...\r\n");
-    void *intf = uart_init_interface();
-    assert(intf != NULL);
-    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
-    assert(0 == result);
     (void)PRINTF("Download WLAN FW...\r\n");
 #endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD*/
     /* WLAN only/Combo firmware download over SDIO */
@@ -368,6 +363,15 @@ void coex_controller_init(void)
     assert(0 == result);
     result = wlan_start(wlan_event_callback);
     assert(0 == result);
+    vTaskDelay(1500);
+#if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
+    /* BT only firmware download over UART */
+    (void)PRINTF("Download BT FW...\r\n");
+    void *intf = uart_init_interface();
+    assert(intf != NULL);
+    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
+    assert(0 == result);
+#endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD*/
 }
 
 #else /* RW612_SERIES */
