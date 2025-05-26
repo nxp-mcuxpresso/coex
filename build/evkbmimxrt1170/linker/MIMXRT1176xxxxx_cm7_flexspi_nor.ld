@@ -71,7 +71,6 @@ MEMORY
   m_ivt                 (RX)  : ORIGIN = 0x30001000, LENGTH = 0x00001000
   m_interrupts          (RX)  : ORIGIN = 0x30002000, LENGTH = 0x00000400
   m_text                (RX)  : ORIGIN = m_text_start, LENGTH = m_text_size
-  NVM_region            (RW)  : ORIGIN = STORAGE_AREA_START, LENGTH = STORAGE_AREA_SIZE
   m_qacode              (RX)  : ORIGIN = 0x00000000, LENGTH = 0x00040000
   m_data                (RW)  : ORIGIN = 0x20000000, LENGTH = 0x00040000
   m_data2               (RW)  : ORIGIN = 0x20240000 + RPMSG_SHMEM_SIZE, LENGTH = 0x00120000 - RPMSG_SHMEM_SIZE
@@ -479,13 +478,6 @@ SECTIONS
   __StackTop   = ORIGIN(m_data2) + LENGTH(m_data2);
   __StackLimit = __StackTop - STACK_SIZE;
   PROVIDE(__stack = __StackTop);
-  /* Remove this section to keep the nvm section on writting the device */
-  .NVM :
-  {
-    FILL(0xFFFFFFFF);
-    . = ORIGIN(NVM_region) + LENGTH(NVM_region) - 1;
-    BYTE(0xFF)
-  } > NVM_region
   .ARM.attributes 0 : { *(.ARM.attributes) }
 
   ASSERT(__StackLimit >= __HeapLimit, "region m_data2 overflowed with stack and heap")
