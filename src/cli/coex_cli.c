@@ -17,7 +17,7 @@
 #include "wlan.h"
 #endif
 #if CONFIG_COEX_ENABLE_PM_MENU
-#include "coex_pm.h"
+#include "coex_lpm.h"
 #endif
 
 #define CMD_BUF_SIZE 512

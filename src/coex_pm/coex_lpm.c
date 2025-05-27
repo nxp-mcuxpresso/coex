@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <string.h>
 #include "fsl_debug_console.h"
-#include "coex_pm.h"
+#include "coex_lpm.h"
 #include "PWR_Interface.h"
 #include "board_lp.h"
 #include "fsl_component_serial_manager.h"
@@ -83,6 +83,7 @@ static void pm_enable_cmd(int argc, char **argv)
 
         APP_ConfigureNextLowPowerMode(constraint, time_ms);
         APP_SetTicklessIdle(true);
+        PRINTF("Constrain is PM%d. Ready to enter low power loop for %d ms\r\n", constraint, time_ms);
 
         pm_state = true;
     }
@@ -202,6 +203,8 @@ static void APP_LPTimerCallback(TimerHandle_t timer_h)
 
     APP_SetTicklessIdle(false);
     pm_state = false;
+
+    PRINTF("Exit low power loop.\r\n");
 }
 
 void APP_LPTimerCreate(void)
