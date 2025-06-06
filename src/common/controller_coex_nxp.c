@@ -26,6 +26,10 @@
 #else
 #include "fsl_rtc.h"
 #endif /* RW612_SERIES */
+#else
+#if(CONFIG_OT_CLI)
+#include "lwip/tcpip.h"
+#endif
 #endif /* CONFIG_WIFI_BLE_COEX_APP */
 
 #ifdef RW612_SERIES
