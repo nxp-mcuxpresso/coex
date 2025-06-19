@@ -1,0 +1,78 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2025-06-19T07:30:30Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.20"
+  },
+  "name": "coex-v25.06.00",
+  "dataLicense": "CC0-1.0",
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-e5b7758e-198f-4ef0-a1c0-449099001fd5",
+      "extractedText": "FatFs License\n=============\n\nFatFs module is a generic FAT file system module for small embedded systems. This\nis a free software that opened for education, research and commercial\ndevelopments under license policy of following trems.\n\nCopyright (C) 2013, ChaN, all right reserved.\n\n  * The FatFs module is a free software and there is NO WARRANTY.\n\n  *  No restriction on use. You can use, modify and redistribute it for personal,\n    non-profit or commercial products UNDER YOUR RESPONSIBILITY.\n\n  * Redistributions of source code must retain the above copyright notice.",
+      "name": "FatFs License"
+    }
+  ],
+  "documentNamespace": "https://nxp.com/spdx/db3c7bcc-5a3c-4667-91ff-56be05022cde",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde",
+      "name": "coex",
+      "versionInfo": "v25.06.00",
+      "licenseConcluded": "(BSD-3-Clause)",
+      "licenseDeclared": "(BSD-3-Clause)",
+      "downloadLocation": "https://github.com/nxp-mcuxpresso/coex",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-18f07cfa-2c43-47ad-b6c4-546506c7a5d7",
+      "name": "FatFs Module",
+      "versionInfo": "R0.15",
+      "licenseConcluded": "LicenseRef-e5b7758e-198f-4ef0-a1c0-449099001fd5",
+      "licenseDeclared": "LicenseRef-e5b7758e-198f-4ef0-a1c0-449099001fd5",
+      "homepage": "http://elm-chan.org/fsw/ff/00index_e.html",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: FatFs Module",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-87476701-cd7b-494c-a778-27bd8fecc90f",
+      "name": "lwIP",
+      "versionInfo": "2.2.1",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "homepage": "http://savannah.nongnu.org/projects/lwip/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: lwIP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-87476701-cd7b-494c-a778-27bd8fecc90f"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-18f07cfa-2c43-47ad-b6c4-546506c7a5d7"
+    }
+  ]
+}
