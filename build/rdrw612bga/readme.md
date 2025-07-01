@@ -70,6 +70,10 @@ ln -s <path-to-ot-nxp> ot-nxp
 
 ### 2. Build OT CLI library
 
+<font color=red> **NOTE:**</font>
+- `<value_for_configMAX_PRIORITIES>` should be set to the same as`configMAX_PRIORITIES` in the coex_wifi_edgefast example's `FreeRTOSConfig.h` file (Path: `<path-to-sdk>/examples/_boards/\<board\>/coex_examples/coex_wifi_edgefast` OR `<path-to-sdk>/boards/\<board\>/coex_examples/coex_wifi_edgefast`).
+- The minimum value of `<value_for_configMAX_PRIORITIES>` is 5.
+
 ```bash
 # NOTE: Make sure the paths of arm-gcc tool are set to the Path system variable.
 # For example,
