@@ -41,6 +41,10 @@
 #endif /* CONFIG_OT_CLI */
 #endif /* RW612_SERIES */
 
+#ifndef RW612_SERIES
+int sdio_drv_init(void (*cd_int)(int));
+#endif
+
 static void printSeparator(void)
 {
     PRINTF("========================================\r\n");
@@ -360,6 +364,8 @@ void coex_controller_init(void)
 #if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
     BOARD_WIFI_BT_Enable(false);
     BOARD_WIFI_BT_Enable(true);
+    result = sdio_drv_init(NULL);
+    assert(0 == result);
     (void)PRINTF("Download WLAN FW...\r\n");
 #endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD*/
     /* WLAN only/Combo firmware download over SDIO */
