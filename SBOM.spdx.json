@@ -2,13 +2,13 @@
   "SPDXID": "SPDXRef-DOCUMENT",
   "spdxVersion": "SPDX-2.3",
   "creationInfo": {
-    "created": "2025-06-19T07:30:30Z",
+    "created": "2025-08-04T04:55:48Z",
     "creators": [
       "Organization: NXP"
     ],
     "licenseListVersion": "3.20"
   },
-  "name": "coex-v25.06.00",
+  "name": "coex-v25.09.00-pvw2",
   "dataLicense": "CC0-1.0",
   "hasExtractedLicensingInfos": [
     {
@@ -17,12 +17,12 @@
       "name": "FatFs License"
     }
   ],
-  "documentNamespace": "https://nxp.com/spdx/db3c7bcc-5a3c-4667-91ff-56be05022cde",
+  "documentNamespace": "https://nxp.com/spdx/3b77aab2-c310-446c-aad1-337f0b7669c0",
   "packages": [
     {
-      "SPDXID": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde",
+      "SPDXID": "SPDXRef-package-3b77aab2-c310-446c-aad1-337f0b7669c0",
       "name": "coex",
-      "versionInfo": "v25.06.00",
+      "versionInfo": "v25.09.00-pvw2",
       "licenseConcluded": "(BSD-3-Clause)",
       "licenseDeclared": "(BSD-3-Clause)",
       "downloadLocation": "https://github.com/nxp-mcuxpresso/coex",
@@ -43,34 +43,16 @@
       "supplier": "NOASSERTION",
       "externalRefs": [],
       "filesAnalyzed": false
-    },
-    {
-      "SPDXID": "SPDXRef-package-87476701-cd7b-494c-a778-27bd8fecc90f",
-      "name": "lwIP",
-      "versionInfo": "2.2.1",
-      "licenseConcluded": "BSD-3-Clause",
-      "licenseDeclared": "BSD-3-Clause",
-      "homepage": "http://savannah.nongnu.org/projects/lwip/",
-      "downloadLocation": "NOASSERTION",
-      "originator": "Organization: lwIP",
-      "supplier": "NOASSERTION",
-      "externalRefs": [],
-      "filesAnalyzed": false
     }
   ],
   "relationships": [
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relationshipType": "DESCRIBES",
-      "relatedSpdxElement": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde"
+      "relatedSpdxElement": "SPDXRef-package-3b77aab2-c310-446c-aad1-337f0b7669c0"
     },
     {
-      "spdxElementId": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde",
-      "relationshipType": "CONTAINS",
-      "relatedSpdxElement": "SPDXRef-package-87476701-cd7b-494c-a778-27bd8fecc90f"
-    },
-    {
-      "spdxElementId": "SPDXRef-package-db3c7bcc-5a3c-4667-91ff-56be05022cde",
+      "spdxElementId": "SPDXRef-package-3b77aab2-c310-446c-aad1-337f0b7669c0",
       "relationshipType": "CONTAINS",
       "relatedSpdxElement": "SPDXRef-package-18f07cfa-2c43-47ad-b6c4-546506c7a5d7"
     }
