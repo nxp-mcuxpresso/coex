@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  * The BSD-3-Clause license can be found at https://spdx.org/licenses/BSD-3-Clause.html
@@ -14,8 +14,8 @@
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
 product: Peripherals v11.0
-processor: MIMXRT1062xxxxA
-package_id: MIMXRT1062DVL6A
+processor: RW612
+package_id: RW612ETA2I
 mcu_data: ksdk2_0
 processor_version: 11.0.1
 board: MIMXRT1060-EVKB
