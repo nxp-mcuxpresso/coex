@@ -8,10 +8,6 @@
 #ifndef MBEDTLS_CONFIG_CLIENT_H
 #define MBEDTLS_CONFIG_CLIENT_H
 
-#include "ksdk_mbedtls_config.h"
-#undef FREESCALE_PKHA_LONG_OPERANDS_ENABLE
-#undef MBEDTLS_FREESCALE_FREERTOS_CALLOC_ALT
-
 #if CONFIG_WPA_SUPP_MBEDTLS
 #include "wpa_supp_mbedtls_config.h"
 #endif /* CONFIG_WPA_SUPP_MBEDTLS */

@@ -11,12 +11,6 @@
 #if CONFIG_OT_CLI
 #include "rw612-mbedtls-config.h"
 #else
-/* SDK mbetdls config include */
-// #define MBEDTLS_CCM_ALT                    /* Enable use of HASHCRYPT AES CCM .*/
-#include "ksdk_mbedtls_config.h"
-#undef FREESCALE_PKHA_LONG_OPERANDS_ENABLE
-#undef MBEDTLS_FREESCALE_FREERTOS_CALLOC_ALT
-
 #if CONFIG_WPA_SUPP_MBEDTLS
 #include "wpa_supp_mbedtls_config.h"
 #endif /* CONFIG_WPA_SUPP_MBEDTLS */
