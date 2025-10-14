@@ -12,7 +12,7 @@
 #include "rw612-mbedtls-config.h"
 #else
 /* SDK mbetdls config include */
-#ifdef CONFIG_WPA_SUPP_MBEDTLS
+#if CONFIG_WPA_SUPP_MBEDTLS
 #include "wpa_supp_els_pkc_mbedtls_config.h"
 #endif /* CONFIG_WPA_SUPP_MBEDTLS */
 #endif /* CONFIG_OT_CLI */

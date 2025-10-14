@@ -16,8 +16,7 @@
 #include "usb_host.h"
 #include "fsl_device_registers.h"
 #if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)) || defined(RW612_SERIES))
-#include "els_pkc_mbedtls.h"
-#include "platform_hw_ip.h"
+#include "psa/crypto.h"
 #endif /* CONFIG_BT_SMP */
 #if(CONFIG_WIFI_BLE_COEX_APP)
 #include "fsl_rtc.h"
@@ -82,7 +81,7 @@ void BOARD_InitHardware(void)
 #endif
 
 #if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)) || defined(RW612_SERIES))
-    CRYPTO_InitHardware();
+    psa_crypto_init();
 #endif /* CONFIG_BT_SMP */
 #if(CONFIG_WIFI_BLE_COEX_APP)
     RTC_Init(RTC);
