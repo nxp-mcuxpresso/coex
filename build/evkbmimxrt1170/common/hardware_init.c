@@ -74,6 +74,9 @@ void BOARD_InitHardware(void)
     EDMA_GetDefaultConfig(&config);
     EDMA_Init(dmaBases[0], &config);
 #endif
+#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)))
+    bt_psa_crypto_init();
+#endif /* CONFIG_BT_SMP */
 }
 
 #if (defined(WIFI_88W8987_BOARD_MURATA_1ZM_M2) || defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || \
