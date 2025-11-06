@@ -10,10 +10,11 @@
 
 #if CONFIG_OT_CLI
 #include "rw612-mbedtls-config.h"
-#else
-/* SDK mbetdls config include */
-#if CONFIG_WPA_SUPP_MBEDTLS
+#elif CONFIG_WPA_SUPP_MBEDTLS
 #include "wpa_supp_els_pkc_mbedtls_config.h"
-#endif /* CONFIG_WPA_SUPP_MBEDTLS */
+#elif !CONFIG_DISABLE_BLE
+#include "mbedtls_user_config.h" //for ble only case
+#else
+/*Not include mbedtls config file.*/
 #endif /* CONFIG_OT_CLI */
 #endif /* MBEDTLS_CONFIG_CLIENT_H */
