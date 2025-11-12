@@ -45,10 +45,6 @@
 
 #define LWIP_IPV6_SEND_ROUTER_SOLICIT 1
 
-#define LWIP_IPV6_DHCP6 1
-#define LWIP_IPV6_DHCP6_STATEFUL 1
-#define LWIP_IPV6_DHCP6_PD 1
-
 #endif
 #endif /* RW610 */
 
