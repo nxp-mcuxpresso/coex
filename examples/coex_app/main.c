@@ -152,8 +152,6 @@ void task_main(void *param)
 
 int main(void)
 {
-    BaseType_t result = 0;
-
     BOARD_InitHardware();
 #ifdef RW612_SERIES
     APP_InitServices();
@@ -163,10 +161,11 @@ int main(void)
     PRINTF("        Coex APP\r\n");
     printSeparator();
 
-    result =
+    BaseType_t result =
         xTaskCreate(task_main, "main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_PRIO, &task_main_handle);
     assert(pdPASS == result);
 
+    (void)result;
     vTaskStartScheduler();
     for (;;)
     {
