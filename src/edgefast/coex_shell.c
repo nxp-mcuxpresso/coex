@@ -97,31 +97,43 @@ static void wifi_CommandInit(shell_handle_t shell)
 #endif
 
 #if APP_LOWPOWER_ENABLED
-extern void APP_SetTicklessIdle(bool enable);
 extern void APP_ConfigureNextLowPowerMode(uint8_t nextMode, uint32_t timeMs);
 bool pm_state = false;
-
 static int cmd_pm_enable(const struct shell *sh, size_t argc, char *argv[])
 {
     uint8_t constraint = 0U;
     uint32_t time_ms = 0xffffffffUL;
 
-    if (argc > 3)
+    if (argc < 2 || argc > 3)
         return -EINVAL;
 
-    if (pm_state == false)
+    if (pm_state)
     {
-        constraint = atoi(argv[1]);
-        if (argc == 3)
-        {
-            time_ms = atoi(argv[2]);
-        }
-
-        APP_ConfigureNextLowPowerMode(constraint, time_ms);
-        APP_SetTicklessIdle(true);
-
-        pm_state = true;
+        shell_error(sh, "Low power mode already enabled");
+        return -EBUSY;
     }
+
+    constraint = (uint8_t)atoi(argv[1]);
+    if (constraint < 1 || constraint > 3)
+    {
+        shell_error(sh, "Invalid constraint value. Must be 1-3");
+        pm_state = false;
+        return -EINVAL;
+    }
+
+    if (argc == 3)
+    {
+        time_ms = (uint32_t)atoi(argv[2]);
+    }
+
+    if (constraint == 1)
+    {
+        constraint = 0;
+    }
+
+    shell_print(sh, "Constraint is PM%d. Ready to enter low power loop for %u ms", constraint, time_ms);
+    APP_ConfigureNextLowPowerMode(constraint, time_ms);
+    pm_state = true;
 
     return 0;
 }

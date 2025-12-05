@@ -67,7 +67,11 @@ static void BOARD_InitOtConsole(void)
 void BOARD_InitHardware(void)
 {
     BOARD_InitBootPins();
+#if defined(gAppLowPowerClockMode_d) && (gAppLowPowerClockMode_d > 0)
+    BOARD_BootClockLPR();
+#else
     BOARD_InitBootClocks();
+#endif
 #if defined(gBoardUseFro32k_d) && (gBoardUseFro32k_d > 0)
     CLOCK_AttachClk(kRC32K_to_CLK32K);
 #else

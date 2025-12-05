@@ -90,8 +90,13 @@ extern int bt_bas_set_battery_level(uint8_t level);
 
 #ifdef RW612_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)
-/* Tickless idle is not allowed by default but can be enable runtime with APP_SetTicklessIdle */
+#if (CONFIG_OT_CLI && gBoardUseFro32k_d)
+/* Tickless idle is not allowed by default when using FRO32k */
 static int ticklessIdleAllowed = 0;
+#else
+/* Tickless idle is allowed by default but can be diabled runtime with APP_SetTicklessIdle */
+static int ticklessIdleAllowed = 1;
+#endif
 #endif
 #endif
 

@@ -20,7 +20,7 @@ extern void APP_SetTicklessIdle(bool enable);
 #define LOWPOWER_DEFAULT_ENABLE_DURATION_MS (10000U)
 
 bool pm_state = false;
-static PWR_LowpowerMode_t g_currentMode = PWR_PowerDown;
+static PWR_LowpowerMode_t g_currentMode = PWR_WFI;
 static TimerHandle_t      lpTimer       = NULL;
 
 static pm_cli pm_cmd_cli;

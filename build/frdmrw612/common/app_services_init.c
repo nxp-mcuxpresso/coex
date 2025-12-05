@@ -33,12 +33,19 @@ static const serial_manager_lowpower_critical_CBs_t gSerMgr_LowpowerCriticalCBs 
 
 #define LOWPOWER_DEFAULT_ENABLE_DURATION_MS (10000U)
 
-static PWR_LowpowerMode_t g_currentMode = PWR_PowerDown;
+static PWR_LowpowerMode_t g_currentMode = PWR_WFI;
 static TimerHandle_t      lpTimer       = NULL;
 
 extern bool pm_state;
-extern void APP_SetTicklessIdle(bool enable);
 extern void APP_ConfigureNextLowPowerMode(uint8_t nextMode, uint32_t timeMs);
+#endif
+
+/* -------------------------------------------------------------------------- */
+/*                              Public Variables                              */
+/* -------------------------------------------------------------------------- */
+
+#if defined(gAppUseSerialManager_c) && (gAppUseSerialManager_c > 0)
+SERIAL_MANAGER_HANDLE_DEFINE(gSerMgrIf);
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -58,10 +65,10 @@ static void APP_ServiceInitLowpower(void)
      * low power callback to Power Manager */
     BOARD_LowPowerInit();
 
-    /* Set PowerDown constraint by default (works for All application)
-     * Application will be allowed to release the PowerDown constraint
-     */
-    status = PWR_SetLowPowerModeConstraint(PWR_PowerDown);
+    /* Set WFI constraint by default (works for All application)
+     * Application will be allowed to release the WFI constraint and set a deepest lowpower mode constraint such as
+     * DeepSleep or PowerDown if it needs more optimization */
+    status = PWR_SetLowPowerModeConstraint(PWR_WFI);
     assert(status == PWR_Success);
     (void)status;
 
@@ -76,8 +83,6 @@ static void APP_LPTimerCallback(TimerHandle_t timer_h)
     (void)timer_h;
 
     APP_ConfigureNextLowPowerMode(PWR_WFI, 0U);
-
-    APP_SetTicklessIdle(false);
     pm_state = false;
 }
 
