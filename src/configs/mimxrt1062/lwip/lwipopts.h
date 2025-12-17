@@ -69,7 +69,11 @@
 
 #define TCPIP_THREAD_NAME      "tcp/ip"
 #define TCPIP_THREAD_STACKSIZE 1024
+#ifdef CONFIG_WIFI_BTDM
+#define TCPIP_THREAD_PRIO      (configMAX_PRIORITIES - 8)
+#else
 #define TCPIP_THREAD_PRIO      (configMAX_PRIORITIES - 3)
+#endif /* #ifdef CONFIG_WIFI_BTDM */
 #ifdef CONFIG_NETWORK_HIGH_PERF
 #define TCPIP_MBOX_SIZE 96
 #else
