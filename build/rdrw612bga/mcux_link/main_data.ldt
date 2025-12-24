@@ -1,0 +1,42 @@
+<#if memory.name=="SRAM">
+       *(m_usb_dma_init_data)
+       /* Explicit placement of flash and frequently executed functions in RAM */
+       *fsl_adapter_flexspi_nor_flash.o(.text* .rodata*)
+       *mflash_drv.o(.text* .rodata*)
+       *fsl_flexspi.o(.text* .rodata*)
+       *port.o(.text* .rodata*)
+       *portasm.o(.text* .rodata*)
+       *queue.o(.text* .rodata*)
+       *timers.o(.text* .rodata*)
+       *tasks.o(.text* .rodata*)
+       *inet_chksum.o(.text* .rodata*)
+       *ip4.o(.text* .rodata*)
+       *ip6.o(.text* .rodata*)
+       *pbuf.o(.text* .rodata*)
+       *sys_arch.o(.text* .rodata*)
+       *tcp_out.o(.text* .rodata*)
+       *tcp_in.o(.text* .rodata*)
+       *mlan_11n_rxreorder.o(.text* .rodata*)
+       *wifi.o(.text* .rodata*)
+       *wifi-imu.o(.text* .rodata*)
+       *fsl_adapter_rfimu.o(.text* .rodata*)
+       *fsl_cache.o(.text* .rodata*)
+       *fsl_os_abstraction_free_rtos.o(.text* .rodata*)
+       *fsl_memcpy.S.obj(.text* .rodata*)
+       *etharp.o(.text* .rodata*)
+       *ethernet.o(.text* .rodata*)
+       *wifi_netif.o(.text* .rodata*)
+       *libethermind_ble_lc3_ndsp_common.a:*(.text* .rodata*)
+       *libethermind_ble_lc3_ndsp_decoder.a:*(.text* .rodata*)
+       *libethermind_ble_lc3_ndsp_encoder.a:*(.text* .rodata*)
+</#if>
+       *(.data*)
+       KEEP(*(.jcr*))
+        . = ALIGN(4);
+        _k_mem_slab_list_start = .;
+        KEEP(*(SORT(._k_mem_slab*)))
+        _k_mem_slab_list_end = .;
+       . = ALIGN(4);
+        _net_buf_pool_list_start = .;
+        KEEP(*(SORT(._net_buf_pool*)))
+        _net_buf_pool_list_end = .;
