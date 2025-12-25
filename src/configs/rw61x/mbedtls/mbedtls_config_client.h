@@ -17,4 +17,9 @@
 #else
 /*Not include mbedtls config file.*/
 #endif /* CONFIG_OT_CLI */
+
+#ifndef MBEDTLS_ALLOW_PRIVATE_ACCESS
+#define MBEDTLS_ALLOW_PRIVATE_ACCESS
+#endif
+
 #endif /* MBEDTLS_CONFIG_CLIENT_H */
