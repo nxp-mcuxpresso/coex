@@ -306,8 +306,8 @@ SECTIONS
     . = ALIGN(32);
     /* Explicit placement of flash and frequently executed functions in RAM */
     */fsl_adapter_flexspi_nor_flash.c.obj
-    */mflash_drv.c.obj
-    */fsl_flexspi.c.obj
+    */mflash_drv.c.obj (.text .text* .rodata .rodata*)
+    */fsl_flexspi.c.obj (.text .text* .rodata .rodata*)
     *(.data)                 /* .data sections */
     *(.data*)                /* .data* sections */
     KEEP(*(.jcr*))
