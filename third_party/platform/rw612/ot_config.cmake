@@ -13,6 +13,10 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PUBLIC
     ${OT_SRC_DIR}/src/rw/rw612
 )
 
+target_compile_definitions(${MCUX_SDK_PROJECT_NAME} PUBLIC
+    MBEDTLS_MCUX_ENTROPY=1
+)
+
 # Link RW612 OpenThread libraries
 TARGET_LINK_LIBRARIES(${MCUX_SDK_PROJECT_NAME} PRIVATE -Wl,--start-group)
 
