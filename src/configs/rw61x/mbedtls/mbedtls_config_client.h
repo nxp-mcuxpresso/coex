@@ -10,6 +10,9 @@
 
 #if CONFIG_OT_CLI
 #include "rw612-mbedtls-config.h"
+#undef PSA_WANT_KEY_TYPE_ECC_KEY_PAIR
+#undef PSA_WANT_KEY_TYPE_RSA_KEY_PAIR
+
 #elif CONFIG_WPA_SUPP_MBEDTLS
 #include "wpa_supp_els_pkc_mbedtls_config.h"
 #elif !CONFIG_DISABLE_BLE
