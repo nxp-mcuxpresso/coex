@@ -24,7 +24,6 @@
 
 #if defined(SD8978) || defined(SD8987) || defined(SD8801) || defined(SD9177) || defined(IW610)
 #define CONFIG_WIFI_AUTO_POWER_SAVE 1
-#define CONFIG_WIFI_CAPA 1
 #define CONFIG_ROAMING    1
 #define CONFIG_TURBO_MODE       1
 #define CONFIG_EXT_SCAN_SUPPORT 1
