@@ -68,15 +68,6 @@
 #endif
 #include "coex_shell.h"
 
-#if defined(MBEDTLS_USER_CONFIG_FILE)
-#include MBEDTLS_USER_CONFIG_FILE
-#endif
-
-
-#if defined(MBEDTLS_THREADING_C) && defined(MBEDTLS_THREADING_ALT)
-#include "threading_alt.h"
-#endif
-
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -112,7 +103,6 @@ static int ticklessIdleAllowed = 1;
 const int TASK_MAIN_PRIO       = (configMAX_PRIORITIES-5);
 const int TASK_MAIN_STACK_SIZE = (2 * 1024);
 TaskHandle_t task_main_handle;
-
 
 /*******************************************************************************
  * Code
@@ -170,10 +160,6 @@ int main(void)
     BOARD_InitHardware();
 #ifdef RW612_SERIES
     APP_InitServices();
-#endif
-
-#if defined(MBEDTLS_THREADING_C) && defined(MBEDTLS_THREADING_ALT)
-    config_mbedtls_threading_alt();
 #endif
 
     printSeparator();
