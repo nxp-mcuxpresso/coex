@@ -579,4 +579,12 @@ u32_t lwip_rand(void);
 #define LWIP_HOOK_TCP_OUT_ADD_TCPOPTS(p, hdr, pcb, opts) lwip_hook_tcp_out_add_tcpopts(p, hdr, pcb, opts)
 #endif
 
+/* On-demand timer options */
+#define LWIP_IGMP_TIMERS_ONDEMAND 1
+#define LWIP_MLD6_TIMERS_ONDEMAND 1
+#define LWIP_DHCP_FINE_TIMERS_ONDEMAND 1
+#define LWIP_DNS_TIMERS_ONDEMAND 1
+#define LWIP_IP4_REASSEMBLY_TIMERS_ONDEMAND 1
+#define LWIP_IP6_REASSEMBLY_TIMERS_ONDEMAND 1
+
 #endif /* __LWIPOPTS_H__ */

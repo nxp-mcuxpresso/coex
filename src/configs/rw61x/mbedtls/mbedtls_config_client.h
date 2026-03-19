@@ -9,17 +9,18 @@
 #define MBEDTLS_CONFIG_CLIENT_H
 
 #if CONFIG_OT_CLI
-#include "rw612-mbedtls-config.h"
-#undef PSA_WANT_KEY_TYPE_ECC_KEY_PAIR
-#undef PSA_WANT_KEY_TYPE_RSA_KEY_PAIR
+#include "ot-nxp-mbedtls-config.h"
+#include "rw612-mbedtls-psa-config.h"
+#undef PSA_WANT_ALG_JPAKE
+#endif
 
-#elif CONFIG_WPA_SUPP_MBEDTLS
-#include "wpa_supp_els_pkc_mbedtls_config.h"
-#elif !CONFIG_DISABLE_BLE
+#include "coex_mbedtls_psa_crypto_config.h"
+
+#if (!CONFIG_WPA_SUPP_MBEDTLS) && (!CONFIG_DISABLE_BLE)
 #include "mbedtls_user_config.h" //for ble only case
 #else
-/*Not include mbedtls config file.*/
-#endif /* CONFIG_OT_CLI */
+/* Not include mbedtls config file. */
+#endif /* CONFIG_WPA_SUPP_MBEDTLS */
 
 #ifndef MBEDTLS_ALLOW_PRIVATE_ACCESS
 #define MBEDTLS_ALLOW_PRIVATE_ACCESS
