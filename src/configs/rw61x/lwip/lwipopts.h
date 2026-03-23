@@ -46,9 +46,18 @@
 
 #define LWIP_IPV6_FORWARD 1
 
+#if OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE
+/* Enable IPv4 forwarding for NAT64 */
+#define IP_FORWARD 1
+#endif /* OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE */
+
 #define LWIP_IPV6_SEND_ROUTER_SOLICIT 1
 
+#ifndef CONFIG_TX_RX_ZERO_COPY
+#error "CONFIG_TX_RX_ZERO_COPY is not defined. Please set PBUF_POOL_BUFSIZE in ot-lib's lwipopts.h to 1580 and recompile ot-lib."
 #endif
+
+#endif /* CONFIG_OT_CLI */
 #endif /* RW610 */
 
 #define LWIP_IPV6_NUM_ADDRESSES 8
@@ -57,7 +66,7 @@
 
 #define MAX_SOCKETS_TCP           8
 #define MAX_LISTENING_SOCKETS_TCP 4
-#define MAX_SOCKETS_UDP           10
+#define MAX_SOCKETS_UDP           20
 #define TCP_SND_BUF_COUNT         2
 #define TCPIP_STACK_TX_HEAP_SIZE  0
 #define LWIP_COMPAT_SOCKETS       2
@@ -71,8 +80,14 @@
 #define LWIP_LOOPBACK_MAX_PBUFS            8
 
 #define TCPIP_THREAD_NAME      "tcp/ip"
-#define TCPIP_THREAD_STACKSIZE 1024
+#ifndef TCPIP_THREAD_STACKSIZE
+#define TCPIP_THREAD_STACKSIZE 2048
+#endif
+
+#ifndef TCPIP_THREAD_PRIO
 #define TCPIP_THREAD_PRIO      (configMAX_PRIORITIES - 3)
+#endif
+
 #ifdef CONFIG_NETWORK_HIGH_PERF
 #define TCPIP_MBOX_SIZE 64
 #else
@@ -224,6 +239,17 @@
 #else
 #define MEMP_NUM_PBUF 10
 #endif
+
+/**
+ * MEMP_NUM_RAW_PCB: Number of raw connection PCBs
+ * (requires the LWIP_RAW option)
+ */
+#ifndef MEMP_NUM_RAW_PCB
+#if OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE
+/* Increase default as three PCBs are used for NAT64 */
+#define MEMP_NUM_RAW_PCB 7
+#endif /* OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE */
+#endif /* MEMP_NUM_RAW_PCB */
 
 /**
  * MEMP_NUM_TCP_PCB: the number of simulatenously active TCP connections.
@@ -378,14 +404,12 @@
    ---------- IPv6 options ---------------
    ---------------------------------------
 */
-#define LWIP_IPV6 1
-
 /**
  * LWIP_NETIF_IPV6_STATUS_CALLBACK==1: Support a callback function
  * whenever IPv6 address state is changed - Invalid, valid, preferred,
  * tentative, deprecated
  */
-
+#define LWIP_IPV6 1
 #define LWIP_NETIF_IPV6_STATUS_CALLBACK LWIP_IPV6
 
 /* Enable IPv4 Auto IP	*/
@@ -472,10 +496,11 @@
 #define LWIP_DNS            1
 #define DNS_TABLE_SIZE      2  // number of table entries, default 4
 #define DNS_MAX_NAME_LENGTH 64 // max. name length, default 256
-#define DNS_MAX_SERVERS     2  // number of DNS servers, default 2
-#define DNS_DOES_NAME_CHECK 1  // compare received name with given,def 0
-#define DNS_MSG_SIZE        512
-#define MDNS_MSG_SIZE       512
+#define DNS_MAX_SERVERS 4      // number of DNS servers, default 2, increased to 4
+#define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 2
+#define DNS_DOES_NAME_CHECK 1 // compare received name with given,def 0
+#define DNS_MSG_SIZE 512
+#define MDNS_MSG_SIZE 512
 
 #define MDNS_TABLE_SIZE  1 // number of mDNS table entries
 #define MDNS_MAX_SERVERS 1 // number of mDNS multicast addresses
@@ -567,6 +592,21 @@ u32_t lwip_rand(void);
 /* ---------- Core locking ---------- */
 
 #define LWIP_TCPIP_CORE_LOCKING 1
+
+#if LWIP_TCPIP_CORE_LOCKING
+void sys_lock_tcpip_core(void);
+#define LOCK_TCPIP_CORE() sys_lock_tcpip_core()
+
+void sys_unlock_tcpip_core(void);
+#define UNLOCK_TCPIP_CORE() sys_unlock_tcpip_core()
+
+void sys_check_core_locking(void);
+#define LWIP_ASSERT_CORE_LOCKED() sys_check_core_locking()
+
+void sys_mark_tcpip_thread(void);
+#define LWIP_MARK_TCPIP_THREAD() sys_mark_tcpip_thread()
+#endif // LWIP_TPIP_CORE_LOCKING
+
 #define LWIP_NETCONN_SEM_PER_THREAD 0
 
 #define LWIP_NETCONN_FULLDUPLEX 0
