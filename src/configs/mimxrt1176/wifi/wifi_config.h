@@ -151,7 +151,8 @@
 #endif
 #endif
 #endif /* CONFIG_WPA_SUPP */
-
+#else
+#define CONFIG_WPA_SUPP_CRYPTO 0
 #endif /* CONFIG_WPA_SUPP_MBEDTLS */
 
 /* Logs */
