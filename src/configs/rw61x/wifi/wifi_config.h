@@ -25,6 +25,7 @@
  */
 #define CONFIG_TX_RX_ZERO_COPY 1
 #define CONFIG_ANT_DETECT 1
+#define CONFIG_RF_TEST_MODE 1
 #endif
 
 /*

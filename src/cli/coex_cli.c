@@ -44,11 +44,10 @@ int coex_cli_init()
     {
         return -1;
     }
-
 #if CONFIG_COEX_ENABLE_PM_MENU
     if (!pm_cli_init())
     {
-        PRINTF("Failed to initialize power manager cli.\r\n");
+        (void)PRINTF("Failed to initialize power manager cli.\r\n");
         return -1;
     }
 #endif

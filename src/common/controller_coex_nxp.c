@@ -179,6 +179,14 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
             PRINTF("ENHANCED WLAN CLIs are initialized\r\n");
             printSeparator();
 #endif
+#if CONFIG_RF_TEST_MODE
+            ret = wlan_test_mode_cli_init();
+            if (ret != WM_SUCCESS)
+            {
+                (void)PRINTF("Failed to initialize WLAN Test Mode CLIs\r\n");
+                return 0;
+            }
+#endif
             ret = ping_cli_init();
             if (ret != WM_SUCCESS)
             {
