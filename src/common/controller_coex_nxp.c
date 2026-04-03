@@ -34,7 +34,6 @@
 
 #ifdef RW612_SERIES
 #if(CONFIG_OT_CLI)
-#include "ot_platform_common.h"
 #include "fwk_platform_coex.h"
 #else
 #include "fwk_platform_ble.h"
