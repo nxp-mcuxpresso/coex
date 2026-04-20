@@ -49,6 +49,33 @@ static void printSeparator(void)
     PRINTF("========================================\r\n");
 }
 
+#if CONFIG_OT_CLI
+#ifdef __MCUXPRESSO
+typedef void (*func_ptr)(void);
+
+extern func_ptr __preinit_array_start[];
+extern func_ptr __preinit_array_end[];
+extern func_ptr __init_array_start[];
+extern func_ptr __init_array_end[];
+
+static inline void mcux_libc_init_array(void)
+{
+    size_t count;
+    size_t i;
+
+    count = __preinit_array_end - __preinit_array_start;
+    for (i = 0; i < count; i++) {
+        __preinit_array_start[i]();
+    }
+
+    count = __init_array_end - __init_array_start;
+    for (i = 0; i < count; i++) {
+        __init_array_start[i]();
+    }
+}
+#endif /*__MCUXPRESSO */
+#endif /*CONFIG_OT_CLI */
+
 #if(CONFIG_WIFI_BLE_COEX_APP)
 static struct wlan_network uap_network;
 static struct wlan_network sta_network;
@@ -411,6 +438,10 @@ void coex_controller_init(void)
 #endif /* CONFIG_WIFI_BLE_COEX_APP */
 
 #if(CONFIG_OT_CLI)
+#ifdef __MCUXPRESSO
+    /* Initialize vtable in OT libraries */
+    mcux_libc_init_array();
+#endif
     /* Initialize 15.4+BLE combo controller first
     * Any other attemps to init a 15.4 or BLE single mode will be ignored
     * For BLE, ethermind calls controller_init which calls PLATFORM_InitBle which calls PLATFORM_InitControllers(connBle_c)
