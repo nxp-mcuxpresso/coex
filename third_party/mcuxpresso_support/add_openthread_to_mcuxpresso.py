@@ -499,7 +499,7 @@ def find_xml_file_auto(app_name, script_location=None):
     Directory structure:
     - Script: middleware/wireless/coex/third_party/mcuxpresso_support/add_openthread_to_mcuxpresso.py
     - ot-nxp: middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp/
-    - XML: boards/frdmrw612/{coex_examples|ncp_examples}/{app_name}/*.xml
+    - XML: boards/<auto-detected>/{coex_examples|ncp_examples}/{app_name}/*.xml
     """
     if script_location is None:
         script_location = Path(__file__).resolve()
@@ -542,9 +542,13 @@ def find_xml_file_auto(app_name, script_location=None):
         example_type = "ncp_examples"
     else:
         for etype in ["coex_examples", "ncp_examples"]:
-            test_path = boards_root / "frdmrw612" / etype / app_name
-            if test_path.exists():
-                example_type = etype
+            # Auto-detect board name
+            for board_dir in boards_root.iterdir():
+                if board_dir.is_dir() and not board_dir.name.startswith("."):
+                    if (board_dir / etype / app_name).exists():
+                        example_type = etype
+                        break
+            if example_type:
                 break
     
     if example_type is None:
@@ -553,10 +557,21 @@ def find_xml_file_auto(app_name, script_location=None):
             "Try using app name with 'coex' or 'ncp' in it."
         )
     
-    # Find application directory
-    app_dir = boards_root / "frdmrw612" / example_type / app_name
-    if not app_dir.exists():
-        raise FileNotFoundError(f"Application directory not found: {app_dir}")
+    # Find application directory - auto-detect board name
+    board_name = None
+    for board_dir in boards_root.iterdir():
+        if board_dir.is_dir() and not board_dir.name.startswith("."):
+            if (board_dir / example_type / app_name).exists():
+                board_name = board_dir.name
+                break
+    
+    if not board_name:
+        raise FileNotFoundError(
+            f"Cannot find board with app: {app_name} in {example_type}. "
+            f"Searched in: {boards_root}"
+        )
+    
+    app_dir = boards_root / board_name / example_type / app_name
     
     # Find XML file
     xml_files = [f for f in app_dir.glob("*.xml") if "backup" not in f.name.lower()]
