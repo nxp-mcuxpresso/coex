@@ -5,12 +5,13 @@
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-- [Step 1: Clone OpenThread Repository (Platform-Specific)](#step-1-clone-openthread-repository-platform-specific)
-- [Step 2: Build OpenThread CLI Library](#step-2-build-openthread-cli-library)
-- [Step 3: Update MCUXpresso Project XML Manifest](#step-3-update-mcuxpresso-project-xml-manifest)
-- [Step 4: Enable OpenThread in Project Configuration](#step-4-enable-openthread-in-project-configuration)
-- [Step 5: Import and Build in MCUXpresso IDE](#step-5-import-and-build-in-mcuxpresso-ide)
-- [Platform-Specific Hardware Instructions](#platform-specific-hardware-instructions)
+- [Step 1: Download and Extract SDK Package](#step-1-download-and-extract-sdk-package)
+- [Step 2: Set Up ot-nxp Environment](#step-2-set-up-ot-nxp-environment)
+- [Step 3: Build OpenThread CLI Library](#step-3-build-openthread-cli-library)
+- [Step 4: Update MCUXpresso Project XML Manifest](#step-4-update-mcuxpresso-project-xml-manifest)
+- [Step 5: Enable OpenThread in Project Configuration](#step-5-enable-openthread-in-project-configuration)
+- [Step 6: Import and Build in MCUXpresso IDE](#step-6-import-and-build-in-mcuxpresso-ide)
+- [Step 7: Flash and Verify](#step-7-flash-and-verify)
 - [Quick Reference: Platform Differences](#quick-reference-platform-differences)
 
 ---
@@ -20,7 +21,6 @@
 ### Software Requirements
 
 - **MCUXpresso IDE**
-- **MCUXpresso SDK** for your target platform
 - **Python 3.6+** (for automation scripts)
 - **Git** (for cloning repositories)
 - **ARM GCC Toolchain** (arm-none-eabi-gcc)
@@ -46,34 +46,47 @@ No additional setup required. Use your standard terminal.
 
 ### Hardware Requirements
 
-Refer to the [Platform-Specific Hardware Instructions](#platform-specific-hardware-instructions) section for your hardware platform (e.g., RW612, MCXW71).
+Refer to the [Step 7: Flash and Verify](#step-7-flash-and-verify) section for your hardware platform (e.g., RW612, MCXW71).
 
 ---
 
-## Step 1: Clone OpenThread Repository (Platform-Specific)
+## Step 1: Download and Extract SDK Package
 
-**Platform Difference**: SDK path location differs between Windows and Linux due to Windows' 260-character path limitation.
+1. Download the MCUXpresso SDK zip package for your target platform from the [MCUXpresso SDK Builder](https://mcuxpresso.nxp.com/).
 
-### SDK Path Overview
+2. Extract the package to a local directory:
 
-| Platform | SDK Location |
-|----------|-------------|
-| **Windows** | `mcuxpresso_support/sdk/repo/mcuxsdk` (parallel to ot-nxp) |
-| **Linux** | `mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk` (inside ot-nxp) |
+   **Linux**:
+   ```bash
+   unzip <sdk_package>.zip -d <sdk_root>
+   ```
 
-### 1.1 Clone ot-nxp
+   **Windows**: Use File Explorer or a tool such as 7-Zip to extract the zip to `<sdk_root>`.
 
-Navigate to the mcuxpresso_support directory:
+3. Navigate to the `mcuxpresso_support` directory inside the extracted SDK:
+
+   ```bash
+   cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support
+   ```
+
+4. Clone the ot-nxp repository into this directory:
+
+   ```bash
+   git clone https://github.com/NXP/ot-nxp.git -b <ot_github_release_tag> ot-nxp
+   ```
+
+   > **Note**: The target directory must be named `ot-nxp`. All subsequent steps rely on this relative path.
+
+---
+
+## Step 2: Set Up ot-nxp Environment
+
+### 2.1 Initialize ot-nxp Submodules
+
+Navigate into the cloned ot-nxp directory:
 
 ```bash
-cd <path-to-sdk>/middleware/wireless/coex/third_party/mcuxpresso_support
-```
-
-Clone ot-nxp repository:
-
-```bash
-git clone https://github.com/NXP/ot-nxp.git -b <ot_github_release_tag>
-cd ot-nxp
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
 ```
 
 Initialize submodules:
@@ -82,7 +95,7 @@ Initialize submodules:
 git submodule update --init
 ```
 
-### 1.2 Update NXP SDK
+### 2.2 Update NXP SDK
 
 Run the SDK update script:
 
@@ -90,32 +103,30 @@ Run the SDK update script:
 python third_party/nxp_matter_support/scripts/update_nxp_sdk.py --platform common
 ```
 
-**Expected Result**:
-- **Windows**: SDK downloaded to `mcuxpresso_support/sdk/` (same level as `ot-nxp/`)
-- **Linux**: SDK downloaded to `ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/`
+> **Note**: SDK download location differs between platforms due to Windows' 260-character path limitation:
+> - **Windows**: `mcuxpresso_support/sdk/` (same level as `ot-nxp/`, to avoid long paths)
+> - **Linux**: `mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/`
 
-### 1.3 Troubleshooting: Manual SDK Update
-
-If `update_nxp_sdk.py` fails, manually complete the SDK update:
+If `update_nxp_sdk.py` fails, manually run `west update`:
 
 **Windows**:
 ```bash
-cd <path-to-mcuxpresso_support>/sdk/repo/mcuxsdk_manifest
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/sdk/repo/mcuxsdk_manifest
 west update
 ```
 
 **Linux**:
 ```bash
-cd <path-to-ot-nxp>/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk_manifest
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk_manifest
 west update
 ```
 
-### 1.4 Set Up Environment
+### 2.3 Set Up Environment
 
 **Windows (Git Bash)**:
 
 ```bash
-cd <path-to-mcuxpresso_support>/ot-nxp
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
 
 # Source environment setup (Git Bash supports source command)
 source ../sdk/repo/mcuxsdk/mcux-env.sh
@@ -127,7 +138,7 @@ west mcuxsdk-export
 **Linux**:
 
 ```bash
-cd <path-to-ot-nxp>
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
 
 # Source environment setup
 source ./third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/mcux-env.sh
@@ -140,9 +151,9 @@ west mcuxsdk-export
 
 ---
 
-## Step 2: Build OpenThread CLI Library
+## Step 3: Build OpenThread CLI Library
 
-### 2.1 Set ARM GCC Toolchain Path
+### 3.1 Set ARM GCC Toolchain Path
 
 **Both Windows (Git Bash) and Linux**:
 ```bash
@@ -154,12 +165,12 @@ export ARMGCC_DIR=<path-to-armgcc>
 set ARMGCC_DIR=<path-to-armgcc>
 ```
 
-### 2.2 Build for Your Platform
+### 3.2 Build for Your Platform
 
 Navigate to ot-nxp directory:
 
 ```bash
-cd <path-to-mcuxpresso_support>/ot-nxp
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
 ```
 
 **Example: Build for RW612 Platform**
@@ -168,7 +179,7 @@ cd <path-to-mcuxpresso_support>/ot-nxp
 ./script/build_rw612 ot_cli -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=OFF -DCMAKE_BUILD_TYPE=Debug -DCOEX_RTOS_MAX_PRIO=<value_for_configMAX_PRIORITIES>
 ```
 
-### 2.3 Troubleshooting: Windows Long Path Build Errors
+### 3.3 Troubleshooting: Build Fails on Windows (Long Path Issue)
 
 **Symptom**: Build fails with "subcommand failed" or path-related errors on Windows.
 
@@ -176,8 +187,7 @@ cd <path-to-mcuxpresso_support>/ot-nxp
 
 ```bash
 # Create virtual drive mapping directly to mcuxpresso_support (Git Bash)
-# Replace <package_name> with your actual SDK package name (e.g., board_FRDM-RW612)
-cmd //c "subst W: <sdk_root>\\<package_name>\\middleware\\wireless\\coex\\third_party\\mcuxpresso_support"
+cmd //c "subst W: <sdk_root>\\middleware\\wireless\\coex\\third_party\\mcuxpresso_support"
 
 # Verify mapping
 cmd //c "subst"
@@ -189,51 +199,34 @@ cd /w/ot-nxp
 ./script/build_rw612 ot_cli <options>
 ```
 
-**Important Notes about Virtual Drive W:**
+> **Note**: `W:` is a temporary virtual drive (session-based, no files are copied). It disappears after reboot and can be removed manually with `cmd //c "subst W: /D"`. Removing it does **not** affect your original files.
 
-**Temporary Drive**: The virtual drive `W:` is **NOT a permanent directory**. It is only a symbolic link that exists in the current Windows session.
-
-- **Session-based**: The mapping only persists until you restart Windows
-- **Not a real drive**: No files are copied; it's just a shortcut to the original location
-- **Automatic removal**: The mapping disappears after system reboot
-
-**To manually remove the virtual drive mapping**:
-
-```bash
-# Delete the virtual drive mapping
-cmd //c "subst W: /D"
-
-# Verify it's removed
-cmd //c "subst"
-```
-
-**Safe to Remove**: Deleting the virtual drive mapping **does NOT affect your original files**. The mapping is only a symbolic link (shortcut) to the original location. All your files remain safely in the original directory.
-
-**Why this works**:
-- Original path: `<sdk_root>\<package_name>\middleware\wireless\coex\third_party\mcuxpresso_support\ot-nxp\...` (very long)
-- Mapped path: `W:\ot-nxp\...` (much shorter)
-- This avoids Windows path length limitations during compilation
-
-**Tip**: Replace `<sdk_root>` with your SDK installation directory and `<package_name>` with your package name. Keep the virtual drive mapped during your entire development session to avoid path issues.
-
-### 2.5 Expected Build Output
+### 3.4 Expected Build Output
 
 After successful build in `build_<platform>/<platform>_ot_cli/`:
 
 - **OpenThread Libraries**: `lib/*.a` files
-- **Compilation Database**: `compile_commands.json` (required for Step 3)
+- **Compilation Database**: `compile_commands.json` (required for Step 4)
 - **Build System Files**: `build.ninja`, CMake configuration
 
 ---
 
-## Step 3: Update MCUXpresso Project XML Manifest
+## Step 4: Update MCUXpresso Project XML Manifest
 
-### 3.1 Run the Automation Script
+### 4.1 Script Options
+
+| Option | Description | Example |
+|--------|-------------|----------|
+| `--app <app_name>` | Specify application name (required) | `--app coex_wifi_edgefast` |
+| `--dry-run` | Preview changes without modifying files | `--dry-run` |
+| `--verbose` | Show detailed progress information | `--verbose` |
+
+### 4.2 Run the Automation Script
 
 Navigate to mcuxpresso_support directory:
 
 ```bash
-cd <path-to-sdk>/middleware/wireless/coex/third_party/mcuxpresso_support
+cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support
 ```
 
 Update XML manifest for your application:
@@ -249,30 +242,12 @@ python add_openthread_to_mcuxpresso.py --app <your_application_name>
 4. Creates backup of original XML file
 5. Generates detailed change report
 
-### 3.2 Script Options
-
-| Option | Description | Example |
-|--------|-------------|----------|
-| `--app <app_name>` | Specify application name (required) | `--app coex_wifi_edgefast` |
-| `--dry-run` | Preview changes without modifying files | `--dry-run` |
-| `--verbose` | Show detailed progress information | `--verbose` |
-
-### 3.3 Best Practices
-
-Always run dry-run first:
-
-```bash
-python add_openthread_to_mcuxpresso.py --app coex_wifi_edgefast --dry-run
-```
-
 **Output Files**:
 - Updated XML: `boards/<board>/<example_type>/<app_name>/*.xml`
 - Backup: `*.original_backup_<timestamp>.xml`
 - Report: `XML_CHANGE_REPORT_<timestamp>.md`
 
-### 3.4 Troubleshooting
-
-To restore the original XML file:
+To restore the original XML file if needed:
 
 ```bash
 # Find the backup
@@ -284,12 +259,12 @@ cp <backup_file> <original_xml_file>
 
 ---
 
-## Step 4: Enable OpenThread in Project Configuration
+## Step 5: Enable OpenThread in Project Configuration
 
 Navigate to your application directory:
 
 ```bash
-cd <path-to-sdk>/boards/<board>/coex_examples/<app_name>
+cd <sdk_root>/boards/<board>/coex_examples/<app_name>
 ```
 
 Edit `app_mcuxpresso_config.h`:
@@ -302,16 +277,18 @@ Set `CONFIG_OT` to 1:
 
 ---
 
-## Step 5: Import and Build in MCUXpresso IDE
+## Step 6: Import and Build in MCUXpresso IDE
 
-### 5.1 Install SDK into MCUXpresso IDE
+### 6.1 Install SDK into MCUXpresso IDE
+
+> **Note**: The SDK prepared through Steps 1–5 is now ready to be installed into MCUXpresso IDE.
 
 1. Open MCUXpresso IDE
 2. Navigate to the **Installed SDKs** tab (bottom panel)
 3. Drag-and-drop your SDK archive or SDK folder into the **Installed SDKs** panel
 4. MCUXpresso IDE will install/register the SDK
 
-### 5.2 Import Project from Installed SDK
+### 6.2 Import Project from Installed SDK
 
 1. Click "**Import SDK example(s)...**" in the Quickstart Panel (bottom left)
 2. Select your installed SDK from the dropdown list
@@ -321,12 +298,12 @@ Set `CONFIG_OT` to 1:
    - Select `<app_name>` (e.g., `coex_wifi_edgefast`)
 4. Click **Next**, then **Finish**
 
-### 5.3 Build Project
+### 6.3 Build Project
 
 1. Right-click on the imported project in Project Explorer
 2. Select "Build Configurations" → "Set Active" → "Debug" or "Release"
 3. Click "Build Project" or press Ctrl+B
-4. Verify that OpenThread library is linked correctly
+4. Verify the build succeeded: check that the build log contains no `undefined reference` errors related to OpenThread, and that the map file includes OpenThread symbols.
 
 **Expected Build Output**:
 - Binary file: `<build-config>/<app_name>.axf`
@@ -335,7 +312,7 @@ Set `CONFIG_OT` to 1:
 
 ---
 
-## Platform-Specific Hardware Instructions
+## Step 7: Flash and Verify
 
 ### RW612 Platform
 
@@ -350,7 +327,7 @@ Set `CONFIG_OT` to 1:
   - Stop bits: 1
   - Flow control: None
 
-#### Flash and Verify
+#### Flash the Binary and Verify
 
 **Flash the Binary**:
 
@@ -428,17 +405,6 @@ Done
 
 ## Quick Reference: Platform Differences
 
-### SDK Path and Environment
-
-| Aspect | Windows | Linux |
-|--------|---------|-------|
-| **SDK Location** | `mcuxpresso_support/sdk/repo/mcuxsdk` | `ot-nxp/third_party/.../sdk_next/repo/mcuxsdk` |
-| **SDK Relative to ot-nxp** | Same level (parallel) | Inside ot-nxp |
-| **Reason** | Avoid 260-char path limit | No path restrictions |
-| **Git Long Path Config** | Required | Not needed |
-| **Environment Setup Script** | `mcux-env.cmd` | `mcux-env.sh` |
-| **Execute Environment** | `cmd.exe //c mcux-env.cmd` | `source mcux-env.sh` |
-
 ### Directory Structure Comparison
 
 **Windows**:
@@ -447,10 +413,10 @@ mcuxpresso_support/
 ├── add_openthread_to_mcuxpresso.py
 ├── README.md
 ├── ot-nxp/                    ← Cloned from GitHub
-│   ├── build_rw612/
+│   ├── build_rw612/           ← Generated after Step 3 build
 │   ├── script/build_rw612
 │   └── third_party/nxp_matter_support/
-└── sdk/                       ← SDK (Windows only!)
+└── sdk/                       ← Downloaded by Step 2.2 (Windows only)
     └── repo/mcuxsdk/          ← Actual SDK root
 ```
 
@@ -460,18 +426,10 @@ mcuxpresso_support/
 ├── add_openthread_to_mcuxpresso.py
 ├── README.md
 └── ot-nxp/                              ← Cloned from GitHub
-    ├── build_rw612/
+    ├── build_rw612/                     ← Generated after Step 3 build
     ├── script/build_rw612
     └── third_party/nxp_matter_support/
         └── github_sdk/sdk_next/
-            └── repo/mcuxsdk/            ← SDK (Linux)
+            └── repo/mcuxsdk/            ← Downloaded by Step 2.2
 ```
----
-
-**Important Notes**:
-
-1. The `ot-nxp` directory is NOT included in the SDK package. Users must clone it manually from GitHub.
-2. When using Git Bash on Windows, most Linux commands work without modification.
-3. The virtual drive mapping trick (`subst`) is only needed on Windows for very deep directory structures.
-
 ---

@@ -61,9 +61,6 @@ iii: Create a soft link to the ot-nxp repo in the MCU SDK
 #For SDK repo, 
 cd <path-to-sdk>/middleware/wireless/coex/third_party/
 
-#For SDK package, 
-cd <path-to-sdk>/boards/<boards>/coex_examples/coex_wifi_edgefast/
-
 # NOTE: <path-to-ot-nxp> must be absolute path.
 ln -s <path-to-ot-nxp> ot-nxp
 ```
