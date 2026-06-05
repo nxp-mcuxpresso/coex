@@ -9,8 +9,13 @@
 #define MBEDTLS_CONFIG_CLIENT_H
 
 #if CONFIG_OT_CLI
-#include "rw612-mbedtls-config.h"
-#else
+#include "ot-nxp-mbedtls-config.h"
+#include "rt1060-mbedtls-psa-config.h"
+#undef PSA_WANT_ALG_JPAKE
+#endif
+
+#include "coex_mbedtls_psa_crypto_config.h"
+
 #if CONFIG_WPA_SUPP_MBEDTLS
 #include "wpa_supp_mbedtls_config.h"
 #else
@@ -18,6 +23,12 @@
 #include "mbedtls_user_config.h" //for ble only case
 #endif /* !CONFIG_DISABLE_BLE */
 #endif /* CONFIG_WPA_SUPP_MBEDTLS */
-#endif /* CONFIG_OT_CLI */
 
+#if 0
+#if (!CONFIG_WPA_SUPP_MBEDTLS) && (!CONFIG_DISABLE_BLE)
+#include "mbedtls_user_config.h" //for ble only case
+#else
+/* Not include mbedtls config file. */
+#endif /* CONFIG_WPA_SUPP_MBEDTLS */
+#endif
 #endif /* MBEDTLS_CONFIG_CLIENT_H */

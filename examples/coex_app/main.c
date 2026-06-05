@@ -86,6 +86,13 @@
  ******************************************************************************/
 
 extern void BOARD_InitHardware(void);
+
+extern void BOARD_InitUSDHCPins(void);
+extern void BOARD_InitPinsM2(void);
+extern void BOARD_InitM2SPIPins(void);
+extern void BOARD_InitM2I2CPins(void);
+extern void BOARD_InitM2UARTPins(void);
+
 extern void APP_InitServices(void);
 extern void coex_controller_init(void);
 extern void otSysRunIdleTask(void);
@@ -164,10 +171,27 @@ void task_main(void *param)
     vTaskDelete(NULL);
 #endif
 }
-
+int xinyutest = 0;
 int main(void)
 {
+    while(xinyutest == 1)
+    {
+        
+    }
+
     BOARD_InitHardware();
+
+#if (defined(MIMXRT1062_SERIES) || defined(MIMXRT1061_SERIES))
+    //BOARD_InitBootPins();    
+    // BOARD_InitPins();
+
+    BOARD_InitUSDHCPins();
+    BOARD_InitPinsM2();
+    BOARD_InitM2SPIPins();
+    BOARD_InitM2I2CPins();
+    BOARD_InitM2UARTPins();
+#endif
+
 #ifdef RW612_SERIES
     APP_InitServices();
 #endif
@@ -250,6 +274,19 @@ void APP_SetTicklessIdle(bool enable)
 #endif /* configUSE_TICKLESS_IDLE */
 #endif /* RW612_SERIES*/
 
+static int ticklessIdleAllowed = 0;
+
+void APP_SetTicklessIdle(bool enable)
+{
+    if(enable == true)
+    {
+        ticklessIdleAllowed++;
+    }
+    else
+    {
+        ticklessIdleAllowed--;
+    }
+}
 
 /**
  * @brief Loop forever if stack overflow is detected.

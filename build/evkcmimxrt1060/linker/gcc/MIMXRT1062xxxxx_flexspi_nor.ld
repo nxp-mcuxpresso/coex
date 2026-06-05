@@ -36,8 +36,12 @@ ENTRY(Reset_Handler)
 
 LITTLEFS_REGION_SIZE = 0x00200000;
 
+NV_STORAGE_MAX_SECTORS              = DEFINED(gNVMSectorCountLink_d) ? gNVMSectorCountLink_d : 16;
+NV_STORAGE_SECTOR_SIZE              = 0x1000;  /* 4k flash sector size */
+NV_STORAGE_SIZE                     = NV_STORAGE_MAX_SECTORS * NV_STORAGE_SECTOR_SIZE;
+
 m_text_start         = 0x60002400;
-m_text_size          = 0x007FDC00 - LITTLEFS_REGION_SIZE;
+m_text_size          = 0x007FDC00 - LITTLEFS_REGION_SIZE - NV_STORAGE_SIZE;
 
 HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x1000;
 STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0400;
@@ -57,11 +61,17 @@ MEMORY
 
 /* NOTE: The last LITTLEFS_REGION_SIZE Flash( in range (m_text_start + m_text_size) ~ (m_text_start + m_text_size + LITTLEFS_REGION_SIZE -1)) is reserved for litteFS data */
 
+/*** NV Storage configuration Start ***/
+NV_STORAGE_START_ADDRESS            = m_text_start + m_text_size;
+NV_STORAGE_START_ADDRESS_OFFSET     = NV_STORAGE_START_ADDRESS - 0x60000000;
+NV_STORAGE_END_ADDRESS              = NV_STORAGE_START_ADDRESS + NV_STORAGE_SIZE - 1;
+/*** NV Storage configuration End ***/
+
 /*** littleFS configuration Start ***/
-EDGEFAST_BT_LITTLEFS_STORAGE_START_ADDRESS = m_text_start + m_text_size;
+EDGEFAST_BT_LITTLEFS_STORAGE_START_ADDRESS = NV_STORAGE_END_ADDRESS + 1;
 EDGEFAST_BT_LITTLEFS_STORAGE_SECTOR_SIZE   = 0x1000;  /* 4k flash sector size */
 EDGEFAST_BT_LITTLEFS_STORAGE_MAX_SECTORS   = LITTLEFS_REGION_SIZE / EDGEFAST_BT_LITTLEFS_STORAGE_SECTOR_SIZE;
-/*** littleFS configuration End ***/
+/*** littleFS configuration End ****/
 
 /* Define output sections */
 SECTIONS
