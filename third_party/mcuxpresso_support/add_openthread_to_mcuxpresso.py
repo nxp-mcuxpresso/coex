@@ -493,100 +493,53 @@ class XMLUpdater:
 def find_xml_file_auto(app_name, script_location=None):
     """
     Automatically find XML file based on application name.
-    
+
     Uses pathlib for cross-platform path handling.
-    
-    Directory structure:
-    - Script: middleware/wireless/coex/third_party/mcuxpresso_support/add_openthread_to_mcuxpresso.py
-    - ot-nxp: middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp/
-    - XML: boards/<auto-detected>/{coex_examples|ncp_examples}/{app_name}/*.xml
+
+    Expected layout:
+      boards/<board>/coex_examples/third_party/mcuxpresso_support/
+      boards/<board>/coex_examples/<app>/*.xml
+      boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp/
+
+    ot-nxp is always next to the script.
+    XML is in the app directory under coex_examples/.
     """
     if script_location is None:
         script_location = Path(__file__).resolve()
     else:
         script_location = Path(script_location).resolve()
-    
-    # Find middleware root
-    current = script_location.parent
-    middleware_root = None
-    
-    for _ in range(10):
-        if current.name == "middleware":
-            middleware_root = current
-            break
-        current = current.parent
-        if current == current.parent:
-            break
-    
-    if middleware_root is None:
-        raise FileNotFoundError(
-            "Cannot find 'middleware' directory. "
-            "Script must be in: middleware/wireless/coex/third_party/mcuxpresso_support/"
-        )
-    
-    # ot-nxp is in script's parent directory
+
+    # ot-nxp is always next to the script
     ot_nxp_root = script_location.parent / "ot-nxp"
     if not ot_nxp_root.exists():
         raise FileNotFoundError(f"ot-nxp directory not found at: {ot_nxp_root}")
+
+    # boards/<board>/coex_examples/third_party/mcuxpresso_support/
+    script_dir = script_location.parent    # mcuxpresso_support/
+    third_party_dir = script_dir.parent    # third_party/
+    coex_examples_dir = third_party_dir.parent  # coex_examples/
     
-    # Boards directory
-    boards_root = middleware_root.parent / "boards"
-    if not boards_root.exists():
-        raise FileNotFoundError(f"boards directory not found at: {boards_root}")
-    
-    # Determine example type
-    example_type = None
-    if "coex" in app_name.lower():
-        example_type = "coex_examples"
-    elif "ncp" in app_name.lower():
-        example_type = "ncp_examples"
-    else:
-        for etype in ["coex_examples", "ncp_examples"]:
-            # Auto-detect board name
-            for board_dir in boards_root.iterdir():
-                if board_dir.is_dir() and not board_dir.name.startswith("."):
-                    if (board_dir / etype / app_name).exists():
-                        example_type = etype
-                        break
-            if example_type:
-                break
-    
-    if example_type is None:
+    # Find the app directory under coex_examples/
+    app_dir = coex_examples_dir / app_name
+    if not app_dir.exists():
         raise FileNotFoundError(
-            f"Cannot determine example type for app: {app_name}. "
-            "Try using app name with 'coex' or 'ncp' in it."
+            f"Cannot locate app directory: {app_dir}. "
+            "Script must be in: boards/<board>/coex_examples/third_party/mcuxpresso_support/"
         )
-    
-    # Find application directory - auto-detect board name
-    board_name = None
-    for board_dir in boards_root.iterdir():
-        if board_dir.is_dir() and not board_dir.name.startswith("."):
-            if (board_dir / example_type / app_name).exists():
-                board_name = board_dir.name
-                break
-    
-    if not board_name:
-        raise FileNotFoundError(
-            f"Cannot find board with app: {app_name} in {example_type}. "
-            f"Searched in: {boards_root}"
-        )
-    
-    app_dir = boards_root / board_name / example_type / app_name
-    
+
     # Find XML file
     xml_files = [f for f in app_dir.glob("*.xml") if "backup" not in f.name.lower()]
-    
+
     if not xml_files:
         raise FileNotFoundError(f"No XML file found in: {app_dir}")
-    
+
     if len(xml_files) > 1:
         matching = [f for f in xml_files if app_name in f.name]
         xml_file = matching[0] if matching else xml_files[0]
     else:
         xml_file = xml_files[0]
-    
-    return xml_file, ot_nxp_root, app_dir
 
+    return xml_file, ot_nxp_root, app_dir
 
 
 def generate_change_report(xml_file, headers_by_dir, stats, ot_nxp_root):
@@ -726,7 +679,7 @@ Examples:
   python3 %(prog)s --app coex_wifi_edgefast
   
   # Dry-run mode (preview changes)
-  python3 %(prog)s --app ncp_device --dry-run
+  python3 %(prog)s --app coex_wifi_edgefast --dry-run
   
   # Verbose output
   python3 %(prog)s --app coex_wifi_edgefast --verbose
@@ -736,7 +689,7 @@ Examples:
     parser.add_argument(
         "--app",
         dest="app_name",
-        help="Application name (e.g., coex_wifi_edgefast, ncp_device)"
+        help="Application name (e.g., coex_wifi_edgefast)"
     )
     
     parser.add_argument(

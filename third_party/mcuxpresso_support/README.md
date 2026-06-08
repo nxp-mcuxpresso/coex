@@ -66,7 +66,7 @@ Refer to the [Step 7: Flash and Verify](#step-7-flash-and-verify) section for yo
 3. Navigate to the `mcuxpresso_support` directory inside the extracted SDK:
 
    ```bash
-   cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support
+   cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support
    ```
 
 4. Clone the ot-nxp repository into this directory:
@@ -86,7 +86,7 @@ Refer to the [Step 7: Flash and Verify](#step-7-flash-and-verify) section for yo
 Navigate into the cloned ot-nxp directory:
 
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp
 ```
 
 Initialize submodules:
@@ -104,20 +104,20 @@ python third_party/nxp_matter_support/scripts/update_nxp_sdk.py --platform commo
 ```
 
 > **Note**: SDK download location differs between platforms due to Windows' 260-character path limitation:
-> - **Windows**: `mcuxpresso_support/sdk/` (same level as `ot-nxp/`, to avoid long paths)
-> - **Linux**: `mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/`
+> - **Windows**: `boards/<board>/coex_examples/third_party/mcuxpresso_support/sdk/` (same level as `ot-nxp/`, to avoid long paths)
+> - **Linux**: `boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/`
 
 If `update_nxp_sdk.py` fails, manually run `west update`:
 
 **Windows**:
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/sdk/repo/mcuxsdk_manifest
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/sdk/repo/mcuxsdk_manifest
 west update
 ```
 
 **Linux**:
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk_manifest
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp/third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk_manifest
 west update
 ```
 
@@ -126,7 +126,7 @@ west update
 **Windows (Git Bash)**:
 
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp
 
 # Source environment setup (Git Bash supports source command)
 source ../sdk/repo/mcuxsdk/mcux-env.sh
@@ -138,7 +138,7 @@ west mcuxsdk-export
 **Linux**:
 
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp
 
 # Source environment setup
 source ./third_party/nxp_matter_support/github_sdk/sdk_next/repo/mcuxsdk/mcux-env.sh
@@ -170,7 +170,7 @@ set ARMGCC_DIR=<path-to-armgcc>
 Navigate to ot-nxp directory:
 
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp
 ```
 
 **Example: Build for RW612 Platform**
@@ -187,7 +187,7 @@ cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support/ot-nxp
 
 ```bash
 # Create virtual drive mapping directly to mcuxpresso_support (Git Bash)
-cmd //c "subst W: <sdk_root>\\middleware\\wireless\\coex\\third_party\\mcuxpresso_support"
+cmd //c "subst W: <sdk_root>\\boards\\<board>\\coex_examples\\coex_wifi_edgefast\\third_party\\mcuxpresso_support"
 
 # Verify mapping
 cmd //c "subst"
@@ -226,7 +226,7 @@ After successful build in `build_<platform>/<platform>_ot_cli/`:
 Navigate to mcuxpresso_support directory:
 
 ```bash
-cd <sdk_root>/middleware/wireless/coex/third_party/mcuxpresso_support
+cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support
 ```
 
 Update XML manifest for your application:
@@ -409,27 +409,36 @@ Done
 
 **Windows**:
 ```
-mcuxpresso_support/
-├── add_openthread_to_mcuxpresso.py
-├── README.md
-├── ot-nxp/                    ← Cloned from GitHub
-│   ├── build_rw612/           ← Generated after Step 3 build
-│   ├── script/build_rw612
-│   └── third_party/nxp_matter_support/
-└── sdk/                       ← Downloaded by Step 2.2 (Windows only)
-    └── repo/mcuxsdk/          ← Actual SDK root
+boards/<board>/coex_examples/
+├── third_party/
+│   └── mcuxpresso_support/
+│       ├── add_openthread_to_mcuxpresso.py
+│       ├── README.md
+│       ├── ot-nxp/                    ← Cloned from GitHub
+│       │   ├── build_rw612/           ← Generated after Step 3 build
+│       │   ├── script/build_rw612
+│       │   └── third_party/nxp_matter_support/
+│       └── sdk/                       ← Downloaded by Step 2.2 (Windows only)
+│           └── repo/mcuxsdk/          ← Actual SDK root
+└── coex_wifi_edgefast/                ← Application directory
+    └── *.xml
 ```
 
 **Linux**:
 ```
-mcuxpresso_support/
-├── add_openthread_to_mcuxpresso.py
-├── README.md
-└── ot-nxp/                              ← Cloned from GitHub
-    ├── build_rw612/                     ← Generated after Step 3 build
-    ├── script/build_rw612
-    └── third_party/nxp_matter_support/
-        └── github_sdk/sdk_next/
-            └── repo/mcuxsdk/            ← Downloaded by Step 2.2
+boards/<board>/coex_examples/
+├── third_party/
+│   └── mcuxpresso_support/
+│       ├── add_openthread_to_mcuxpresso.py
+│       ├── README.md
+│       └── ot-nxp/                              ← Cloned from GitHub
+│           ├── build_rw612/                     ← Generated after Step 3 build
+│           ├── script/build_rw612
+│           └── third_party/nxp_matter_support/
+│               └── github_sdk/sdk_next/
+│                   └── repo/mcuxsdk/            ← Downloaded by Step 2.2
+└── coex_wifi_edgefast/                          ← Application directory
+    └── *.xml
+```
 ```
 ---
