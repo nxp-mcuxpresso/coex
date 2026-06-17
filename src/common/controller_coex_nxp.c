@@ -21,7 +21,6 @@
 #include "wifi_bt_config.h"
 #include "controller.h"
 #include "firmware_dnld.h"
-//#include "fw_loader_uart.h"
 #if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
 #include "fw_loader_uart.h"
 #endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD */
@@ -392,33 +391,24 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
 }
 #endif
 
-#ifndef RW612_SERIES
-
 #if(CONFIG_OT_CLI)
 extern void appOtStart(int argc, char *argv[]);
 #endif
 
-volatile uint32_t g_tick_vTaskDelay_start = 0;
-volatile uint32_t g_tick_vTaskDelay_end   = 0;
+#ifndef RW612_SERIES
+#if(CONFIG_OT_CLI)
+extern int PLATFORM_IOEXP_I2C_program(uint8_t addr, uint8_t reg, uint8_t val);
+#endif
 
 void coex_controller_init(void)
 {
     int result;
     (void) result;
-
-    PRINTF("XINYU TEST before sdio_drv_init\r\n");
-
-    BOARD_WIFI_BT_Enable(false);
-    BOARD_WIFI_BT_Enable(true);
-    result = sdio_drv_init(NULL);
-    PRINTF("XINYU TEST after sdio_drv_init\r\n");
-
-#if 0
 #if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
     BOARD_WIFI_BT_Enable(false);
     BOARD_WIFI_BT_Enable(true);
     result = sdio_drv_init(NULL);
-    /* BT only firmware download over UART */
+    /* BT only/combo firmware download over UART */
     (void)PRINTF("Download BT FW...\r\n");
     void *intf = uart_init_interface();
     assert(intf != NULL);
@@ -426,9 +416,6 @@ void coex_controller_init(void)
     assert(0 == result);
     (void)PRINTF("Download WLAN FW...\r\n");
 #endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD*/
-#endif
-
-#if 1
 #if CONFIG_WIFI_IND_DNLD
     /* WLAN only/Combo firmware download over SDIO */
     result = wlan_init(wlan_fw_bin, wlan_fw_bin_len);  
@@ -436,42 +423,23 @@ void coex_controller_init(void)
     result = wlan_start(wlan_event_callback);
     assert(0 == result);
 #endif
-#endif
-    vTaskDelay(3000);
 
 #if(CONFIG_OT_CLI)
+    vTaskDelay(300);
+    PLATFORM_IOEXP_I2C_program(0x20U, 0x03U, 0xFEU);
 #ifdef __MCUXPRESSO
     /* Initialize vtable in OT libraries */
     mcux_libc_init_array();
 #endif
-    /* Initialize 15.4+BLE combo controller first
-    * Any other attemps to init a 15.4 or BLE single mode will be ignored
-    * For BLE, ethermind calls controller_init which calls PLATFORM_InitBle which calls PLATFORM_InitControllers(connBle_c)
-    * As we already initialized the controller in combo mode here, the PLATFORM_InitControllers(connBle_c) call does nothing
-    * Same applies for PLATFORM_InitOt which calls PLATFORM_InitControllers(conn802_15_4_c)
-    * For RW61x, 15.4/BLE combo image must be flashed at 15.4 firmware address Z154_IMAGE_A_OFFSET (0x85e0000) */
-    //PLATFORM_InitControllers(conn802_15_4_c);
-
 #if(CONFIG_WIFI_BLE_COEX_APP == 0)
     /* Initialize LWIP stack */
     tcpip_init(NULL, NULL);
 #endif
-    PRINTF("XINYU TEST appOtStart\r\n");
-
     appOtStart(0, NULL);
-
-#elif(CONFIG_DISABLE_BLE == 0)
-    /* BTonly firmware download */
-    PLATFORM_InitBle();
 #endif
 }
 
 #else /* RW612_SERIES */
-
-#if(CONFIG_OT_CLI)
-extern void appOtStart(int argc, char *argv[]);
-#endif
-
 /* Initialize the platform */
 void coex_controller_init(void)
 {

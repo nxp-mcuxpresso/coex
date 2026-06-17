@@ -67,7 +67,7 @@ void BOARD_InitHardware(void)
     EDMA_Init(dmaBases[0], &config);
 #endif
 #if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)))
-    //bt_psa_crypto_init();
+    bt_psa_crypto_init();
 #endif /* CONFIG_BT_SMP */
 }
 

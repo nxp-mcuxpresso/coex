@@ -5,7 +5,7 @@
 message(STATUS "Loading RT1060 OpenThread configuration")
 
 # RT1060 specific library directory
-set(OT_LIB_DIR ${OT_SRC_DIR}/build_rt1060/rt1060_ot_cli/lib)
+set(OT_LIB_DIR ${OT_SRC_DIR}/build_rt1060/iw610_spi/lib)
 message(STATUS "Build with RT1060 ot-cli libs, path=${OT_LIB_DIR}")
 
 # RT1060 specific include directories
@@ -57,7 +57,7 @@ target_link_libraries(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${OT_LIB_DIR}/libopenthread-rt1060.a
     ${OT_LIB_DIR}/libopenthread-spinel-ncp.a
     ${OT_LIB_DIR}/libot-cli-addons.a
-    ${OT_LIB_DIR}/libot-cli-rt1060.a
+    ${OT_LIB_DIR}/libot-cli-rt1060-freertos.a
     ${OT_LIB_DIR}/libopenthread-url.a
     ${OT_LIB_DIR}/libopenthread-radio-spinel.a
     ${OT_LIB_DIR}/libtcplp-ftd.a
