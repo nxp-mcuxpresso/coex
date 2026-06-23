@@ -9,7 +9,8 @@
 #include "edgefast_bluetooth_audio_config.h"
 #define FLASH_ADAPTER_SIZE 0x10000
 
-#if (defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
+#if (defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || defined(WIFI_IW610_BOARD_MURATA_2LL_M2) || \
+     defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || defined(WIFI_IW416_BOARD_MURATA_1XK_USD))
 #include "wifi_bt_module_config.h"
 #include "wifi_config.h"
 #else
