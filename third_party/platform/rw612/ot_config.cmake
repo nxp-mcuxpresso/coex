@@ -30,7 +30,7 @@ target_link_libraries(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${OT_LIB_DIR}/libopenthread-rw612.a
     ${OT_LIB_DIR}/libopenthread-spinel-ncp.a
     ${OT_LIB_DIR}/libot-cli-addons.a
-    ${OT_LIB_DIR}/libot-cli-rw612.a
+    ${OT_LIB_DIR}/libot-cli-rw612-freertos.a
     ${OT_LIB_DIR}/libopenthread-url.a
     ${OT_LIB_DIR}/libopenthread-radio-spinel.a
     ${OT_LIB_DIR}/libtcplp-ftd.a
