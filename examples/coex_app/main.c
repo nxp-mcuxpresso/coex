@@ -96,9 +96,6 @@ extern void BOARD_InitM2UARTPins(void);
 extern void APP_InitServices(void);
 extern void coex_controller_init(void);
 extern void otSysRunIdleTask(void);
-#ifndef RW612_SERIES
-extern int bt_bas_set_battery_level(uint8_t level);
-#endif
 
 /*******************************************************************************
  * Variables
@@ -132,9 +129,6 @@ static void printSeparator(void)
 
 void task_main(void *param)
 {
-#ifndef RW612_SERIES
-    uint8_t level = 0;
-#endif
 
     printSeparator();
 #if defined(RW612_SERIES)
@@ -152,24 +146,8 @@ void task_main(void *param)
     coex_controller_init();
     PRINTF("host init done\r\n");
 
-#ifndef RW612_SERIES
-    /* wait for interface up */
-    vTaskDelay(3000);
-
-    while (1)
-    {
-        vTaskDelay(1000);
-        bt_bas_set_battery_level(level++);
-        if (level > 100)
-        {
-            level = 0;
-        }
-
-    }
-#else
     /* Initialization job is complete, destroy the task */
     vTaskDelete(NULL);
-#endif
 }
 
 int main(void)

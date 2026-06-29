@@ -11,48 +11,16 @@
 
 #include "fsl_debug_console.h"
 #include "fsl_adapter_uart.h"
-#include "controller_hci_uart.h"
-#include "usb_host_config.h"
-#include "usb_host.h"
 #include "fsl_lpuart_edma.h"
 #include "fsl_dmamux.h"
-#include "usb_phy.h"
-#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)))
-#include "psa/crypto.h"
-#endif /* CONFIG_BT_SMP */
-/*${header:end}*/
+#if defined(CONFIG_BT_HOST_CRYPTO) && !defined(CONFIG_BT_CRYPTO_PSA)
+#include "ksdk_mbedtls.h"
+#endif /* CONFIG_BT_HOST_CRYPTO && !CONFIG_BT_CRYPTO_PSA*/
+#include <zephyr/drivers/bluetooth.h>
 
-/*${macro:start}*/
-#if defined(__GIC_PRIO_BITS)
-#define USB_HOST_INTERRUPT_PRIORITY (25U)
-#elif defined(__NVIC_PRIO_BITS) && (__NVIC_PRIO_BITS >= 3)
-#define USB_HOST_INTERRUPT_PRIORITY (6U)
-#else
-#define USB_HOST_INTERRUPT_PRIORITY (3U)
-#endif
 
-/*${macro:end}*/
-
-/*${variable:start}*/
-
-extern void app_audio_streamer_task_signal(void);
-
-/*${variable:end}*/
 
 /*${function:start}*/
-
-#if (defined(CONFIG_BT_SMP) && (CONFIG_BT_SMP > 0))
-void bt_psa_crypto_init(void)
-{
-    psa_status_t status;
-
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        PRINTF("Failed to initialize PSA crypto");
-    }
-    assert(status == PSA_SUCCESS);
-}
-#endif /* CONFIG_BT_SMP */
 
 void BOARD_InitHardware(void)
 {
@@ -74,14 +42,14 @@ void BOARD_InitHardware(void)
     EDMA_GetDefaultConfig(&config);
     EDMA_Init(dmaBases[0], &config);
 #endif
-#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)))
-    bt_psa_crypto_init();
-#endif /* CONFIG_BT_SMP */
+
+#if defined(CONFIG_BT_HOST_CRYPTO) && !defined(CONFIG_BT_CRYPTO_PSA)
+    CRYPTO_InitHardware();
+#endif /* CONFIG_BT_HOST_CRYPTO && !CONFIG_BT_CRYPTO_PSA*/
 }
 
 #if (defined(WIFI_88W8987_BOARD_MURATA_1ZM_M2) || defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || \
-     defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || defined (WIFI_AW611_BOARD_UBX_JODY_W5_M2) || \
-     defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
+     defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || defined(WIFI_IW610_BOARD_MURATA_2LL_M2) || defined(WIFI_AW611_BOARD_UBX_JODY_W5_M2))
 int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config)
 {
     if (NULL == config)
@@ -91,8 +59,8 @@ int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config)
     config->clockSrc        = CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart2);
 #if (defined(WIFI_AW611_BOARD_UBX_JODY_W5_M2))
     config->defaultBaudrate = BOARD_BT_UART_BAUDRATE;
-#elif (defined(WIFI_88W8987_BOARD_MURATA_1ZM_M2) || defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || \
-       defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
+#elif (defined(WIFI_88W8987_BOARD_MURATA_1ZM_M2) || defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || \
+       defined(WIFI_IW612_BOARD_MURATA_2EL_M2) || defined(WIFI_IW610_BOARD_MURATA_2LL_M2))
     config->defaultBaudrate = 115200U;
 #endif
     config->runningBaudrate = BOARD_BT_UART_BAUDRATE;
@@ -138,42 +106,4 @@ void controller_init(void)
 }
 
 #endif
-
-void USB_HostClockInit(void)
-{
-    uint32_t usbClockFreq;
-    usb_phy_config_struct_t phyConfig = {
-        BOARD_USB_PHY_D_CAL,
-        BOARD_USB_PHY_TXCAL45DP,
-        BOARD_USB_PHY_TXCAL45DM,
-    };
-    usbClockFreq = 24000000;
-    if (CONTROLLER_ID == kUSB_ControllerEhci0)
-    {
-        CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, usbClockFreq);
-        CLOCK_EnableUsbhs0Clock(kCLOCK_Usb480M, usbClockFreq);
-    }
-    else
-    {
-        CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, usbClockFreq);
-        CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, usbClockFreq);
-    }
-    USB_EhciPhyInit(CONTROLLER_ID, BOARD_XTAL0_CLK_HZ, &phyConfig);
-}
-
-void USB_HostIsrEnable(void)
-{
-    uint8_t irqNumber;
-
-    uint8_t usbHOSTEhciIrq[] = USBHS_IRQS;
-    irqNumber                = usbHOSTEhciIrq[CONTROLLER_ID - kUSB_ControllerEhci0];
-
-/* Install isr, set priority, and enable IRQ. */
-#if defined(__GIC_PRIO_BITS)
-    GIC_SetPriority((IRQn_Type)irqNumber, USB_HOST_INTERRUPT_PRIORITY);
-#else
-    NVIC_SetPriority((IRQn_Type)irqNumber, USB_HOST_INTERRUPT_PRIORITY);
-#endif
-    EnableIRQ((IRQn_Type)irqNumber);
-}
 /*${function:end}*/
