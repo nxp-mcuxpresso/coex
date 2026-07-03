@@ -14,18 +14,6 @@
 // #include "wifi_ping.h"
 #include "iperf.h"
 #include <wm_net.h>
-#include "wlan_bt_fw.h"
-
-#ifndef RW612_SERIES
-#include "wifi_bt_config.h"
-#include "controller.h"
-#include "firmware_dnld.h"
-#if (CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD)
-#include "fw_loader_uart.h"
-#endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD */
-#else
-#include "fsl_rtc.h"
-#endif /* RW612_SERIES */
 #else
 #if(CONFIG_OT_CLI)
 #include "lwip/tcpip.h"
@@ -38,6 +26,10 @@
 #else
 #include "fwk_platform_ble.h"
 #endif /* CONFIG_OT_CLI */
+#else /* !RW612_SERIES */
+#include "wlan_bt_fw.h"
+#include "coex_nb_uart_fw_download.h"
+#include "wifi_bt_config.h"
 #endif /* RW612_SERIES */
 
 #ifndef RW612_SERIES
@@ -407,15 +399,13 @@ void coex_controller_init(void)
     BOARD_WIFI_BT_Enable(false);
     BOARD_WIFI_BT_Enable(true);
     result = sdio_drv_init(NULL);
-    /* BT only/combo firmware download over UART */
-    (void)PRINTF("Download BT FW...\r\n");
-    void *intf = uart_init_interface();
-    assert(intf != NULL);
-    result = firmware_download(bt_fw_bin, bt_fw_bin_len, intf, 0);
+
+    (void)PRINTF("Download NB FW...\r\n");
+    result = coex_nb_uart_fw_download(bt_fw_bin, bt_fw_bin_len);
     assert(0 == result);
+#endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD */
+#if(CONFIG_WIFI_BLE_COEX_APP)
     (void)PRINTF("Download WLAN FW...\r\n");
-#endif /* CONFIG_BT_IND_DNLD || CONFIG_WIFI_IND_DNLD*/
-#if CONFIG_WIFI_IND_DNLD
     /* WLAN only/Combo firmware download over SDIO */
     result = wlan_init(wlan_fw_bin, wlan_fw_bin_len);  
     assert(0 == result);
