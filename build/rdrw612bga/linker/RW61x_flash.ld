@@ -184,9 +184,6 @@ SECTIONS
         *etharp.c.obj
         *ethernet.c.obj
         *wifi_netif.c.obj
-        *libethermind_ble_lc3_ndsp_common.a:*
-        *libethermind_ble_lc3_ndsp_decoder.a:*
-        *libethermind_ble_lc3_ndsp_encoder.a:*
     )
     *(.text* .rodata*)
     *(.glue_7)               /* glue arm to thumb code */
@@ -195,6 +192,18 @@ SECTIONS
     KEEP (*(.init))
     KEEP (*(.fini))
     . = ALIGN(4);
+  } > m_text
+
+  /* edgefast_open: Zephyr init sections */
+  .z_init :
+  {
+    __init_start = .;
+    __init_EARLY_start = .; KEEP(*(SORT(.z_init_EARLY_P_?_*))); KEEP(*(SORT(.z_init_EARLY_P_??_*))); KEEP(*(SORT(.z_init_EARLY_P_???_*)));
+    __init_PRE_KERNEL_1_start = .; KEEP(*(SORT(.z_init_PRE_KERNEL_1_P_?_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_1_P_??_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_1_P_???_*)));
+    __init_PRE_KERNEL_2_start = .; KEEP(*(SORT(.z_init_PRE_KERNEL_2_P_?_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_2_P_??_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_2_P_???_*)));
+    __init_POST_KERNEL_start = .; KEEP(*(SORT(.z_init_POST_KERNEL_P_?_*))); KEEP(*(SORT(.z_init_POST_KERNEL_P_??_*))); KEEP(*(SORT(.z_init_POST_KERNEL_P_???_*)));
+    __init_APPLICATION_start = .; KEEP(*(SORT(.z_init_APPLICATION_P_?_*))); KEEP(*(SORT(.z_init_APPLICATION_P_??_*))); KEEP(*(SORT(.z_init_APPLICATION_P_???_*)));
+    __init_end = .;
   } > m_text
 
   ._bt_settings_area :
@@ -221,6 +230,24 @@ SECTIONS
     _bt_conn_cb_list_start = .;
     KEEP(*(SORT(._bt_conn_cb.static.*)))
     _bt_conn_cb_list_end = .;
+    . = ALIGN(4);
+  } > m_text
+
+  ._bt_sco_conn_cb :
+  {
+    . = ALIGN(4);
+    _bt_sco_conn_cb_list_start = .;
+    KEEP(*(SORT(._bt_sco_conn_cb*)))
+    _bt_sco_conn_cb_list_end = .;
+    . = ALIGN(4);
+  } > m_text
+
+  ._bt_sco_hci_cb :
+  {
+    . = ALIGN(4);
+    _bt_sco_hci_cb_list_start = .;
+    KEEP(*(SORT(._bt_sco_hci_cb*)))
+    _bt_sco_hci_cb_list_end = .;
     . = ALIGN(4);
   } > m_text
 
@@ -381,9 +408,6 @@ SECTIONS
     *etharp.c.obj(.text* .rodata*)
     *ethernet.c.obj(.text* .rodata*)
     *wifi_netif.c.obj(.text* .rodata*)
-    *libethermind_ble_lc3_ndsp_common.a:*(.text* .rodata*)
-    *libethermind_ble_lc3_ndsp_decoder.a:*(.text* .rodata*)
-    *libethermind_ble_lc3_ndsp_encoder.a:*(.text* .rodata*)
     *(.data)                 /* .data sections */
     *(.data*)                /* .data* sections */
     KEEP(*(.jcr*))
@@ -396,10 +420,16 @@ SECTIONS
     KEEP(*(SORT(._net_buf_pool*)))
     _net_buf_pool_list_end = .;
     . = ALIGN(4);
+    __shell_command_list_start = .;
+    KEEP(*(SORT(.__shell_command*)))
+    __shell_command_list_end = .;
+    . = ALIGN(4);
     __data_end__ = .;        /* define a global symbol at data end */
   } > m_data
 
   __DATA_END = __DATA_ROM + (__data_end__ - __data_start__);
+  text_end = ORIGIN(m_text) + LENGTH(m_text);
+  ASSERT(__DATA_END <= text_end, "region m_text overflowed with text and data")
   _image_size = __DATA_END - __VECTOR_TABLE;
 
   /* Uninitialized data section */

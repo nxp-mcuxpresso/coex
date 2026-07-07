@@ -10,14 +10,12 @@
 #include "board.h"
 #include "pin_mux.h"
 #include "fsl_debug_console.h"
-#include "controller.h"
 #include "fsl_power.h"
 #include "usb_host_config.h"
 #include "usb_host.h"
 #include "fsl_device_registers.h"
-#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)) || defined(RW612_SERIES))
 #include "psa/crypto.h"
-#endif /* CONFIG_BT_SMP */
+
 #if(CONFIG_WIFI_BLE_COEX_APP)
 #include "fsl_rtc.h"
 #endif
@@ -84,9 +82,7 @@ void BOARD_InitHardware(void)
     BOARD_InitOtConsole();
 #endif
 
-#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)) || defined(RW612_SERIES))
     psa_crypto_init();
-#endif /* CONFIG_BT_SMP */
 #if(CONFIG_WIFI_BLE_COEX_APP)
     RTC_Init(RTC);
 #endif

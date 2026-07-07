@@ -5,4 +5,4 @@
  * The BSD-3-Clause license can be found at https://spdx.org/licenses/BSD-3-Clause.html
  */
 
-#include "edgefast_bluetooth_config.h"
+#include "edgefast_open_config.h"
