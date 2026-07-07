@@ -17,7 +17,6 @@
 #include "wlan_bt_fw.h"
 
 #ifndef RW612_SERIES
-#include "fwk_platform_coex.h"
 #include "wifi_bt_config.h"
 #include "controller.h"
 #include "firmware_dnld.h"
