@@ -17,10 +17,38 @@
 #include "ksdk_mbedtls.h"
 #endif /* CONFIG_BT_HOST_CRYPTO && !CONFIG_BT_CRYPTO_PSA*/
 #include <zephyr/drivers/bluetooth.h>
+#include "coex_nb_uart_fw_download.h"
+#include "fsl_gpio.h"
+#include "fsl_iomuxc.h"
 
 
 
 /*${function:start}*/
+
+#if CONFIG_COEX_NB_BSP_TRIGGER
+#define COEX_NB_BSP_RTS_GPIO     GPIO11
+#define COEX_NB_BSP_RTS_PIN      14U
+#define COEX_NB_BSP_RTS_MUX_GPIO IOMUXC_GPIO_DISP_B2_13_GPIO11_IO14
+#define COEX_NB_BSP_RTS_MUX_UART IOMUXC_GPIO_DISP_B2_13_LPUART2_RTS_B
+
+int coex_nb_bsp_trigger(void)
+{
+    /* Toggle BT UART RTS (LPUART2_RTS_B = GPIO_DISP_B2_13 = GPIO11 IO14)
+     * low then high to wake BT CPU from boot-sleep.
+     */
+    gpio_pin_config_t rts_cfg = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
+
+    IOMUXC_SetPinMux(COEX_NB_BSP_RTS_MUX_GPIO, 0U);
+    GPIO_PinInit(COEX_NB_BSP_RTS_GPIO, COEX_NB_BSP_RTS_PIN, &rts_cfg);
+    GPIO_PinWrite(COEX_NB_BSP_RTS_GPIO, COEX_NB_BSP_RTS_PIN, 0U);
+    OSA_TimeDelay(5);
+    GPIO_PinWrite(COEX_NB_BSP_RTS_GPIO, COEX_NB_BSP_RTS_PIN, 1U);
+    IOMUXC_SetPinMux(COEX_NB_BSP_RTS_MUX_UART, 0U);
+    (void)PRINTF("BSP trigger sent: RTS toggled to wake BT from boot-sleep\r\n");
+
+    return 0;
+}
+#endif /* CONFIG_COEX_NB_BSP_TRIGGER */
 
 void BOARD_InitHardware(void)
 {

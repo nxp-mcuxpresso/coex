@@ -166,6 +166,57 @@ static int  coex_nb_fw_upload_read_data(uint8_t *buffer, uint32_t len);
 static int  coex_nb_h4_starting_recv(uint8_t *buffer, uint16_t length);
 static void coex_nb_hci_uart_transmit_cb(hal_uart_handle_t handle, hal_uart_status_t status, void *userData);
 
+#if CONFIG_COEX_NB_BSP_TRIGGER
+/* Interval (ms) to wait for BT header signature before sending BSP trigger */
+#define COEX_NB_BSP_TRIGGER_WAIT_MS 500U
+
+/*******************************************************************************
+ * BSP trigger (boot-sleep-patch)
+ ******************************************************************************/
+
+/* Weak function: board-level implementation should override to toggle RTS and
+ * wake BT from boot-sleep in coex (WiFi+BT) scenario with BSP enabled.
+ */
+__WEAK int coex_nb_bsp_trigger(void)
+{
+    return 0;
+}
+
+static int coex_nb_fw_upload_wake_bt_from_bootsleep(void)
+{
+    int err;
+    int64_t end;
+    uint8_t c;
+    uint16_t wait_time = COEX_NB_BSP_TRIGGER_WAIT_MS;
+
+    end = k_uptime_get() + (int64_t)(COEX_NB_BSP_TRIGGER_WAIT_MS * 10);
+
+    while (k_uptime_get() < end) {
+        wait_time = COEX_NB_BSP_TRIGGER_WAIT_MS + (uint16_t)(k_uptime_get() % 5 + 5);
+        err = k_sem_take(&s_fw_upload.rx.sem, K_MSEC(wait_time));
+        if (err < 0) {
+            /* Timeout: BT CPU is in boot-sleep, send BSP trigger */
+            goto send_bsp_trigger;
+        }
+
+        c = s_fw_upload.rx.buffer[s_fw_upload.rx.tail];
+        s_fw_upload.rx.tail = (s_fw_upload.rx.tail + 1) % sizeof(s_fw_upload.rx.buffer);
+
+        if ((c == COEX_NB_V1_HEADER_DATA_REQ) || (c == COEX_NB_V1_START_INDICATION) ||
+            (c == COEX_NB_V3_START_INDICATION) || (c == COEX_NB_V3_HEADER_DATA_REQ)) {
+            LOG_DBG("HDR SIG 0x%02X found", c);
+            /* Put byte back for fw_uploading to consume */
+            s_fw_upload.rx.tail = (s_fw_upload.rx.tail + sizeof(s_fw_upload.rx.buffer) - 1U) %
+                                   sizeof(s_fw_upload.rx.buffer);
+            k_sem_give(&s_fw_upload.rx.sem);
+        }
+    }
+
+send_bsp_trigger:
+    return coex_nb_bsp_trigger();
+}
+#endif /* CONFIG_COEX_NB_BSP_TRIGGER */
+
 /*******************************************************************************
  * CRC helpers
  ******************************************************************************/
@@ -1060,6 +1111,15 @@ int coex_nb_uart_fw_download(const uint8_t *fw, uint32_t fw_length)
         LOG_ERR("Failed to configure UART for FW download");
         return err;
     }
+
+#if CONFIG_COEX_NB_BSP_TRIGGER
+    /* Wake narrow band CPU from boot-sleep before FW download */
+    err = coex_nb_fw_upload_wake_bt_from_bootsleep();
+    if (err) {
+        LOG_ERR("Failed to send BSP trigger");
+        return err;
+    }
+#endif /* CONFIG_COEX_NB_BSP_TRIGGER */
 
     /* Download firmware */
     err = coex_nb_fw_uploading(fw, fw_length);

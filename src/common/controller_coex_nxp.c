@@ -20,14 +20,15 @@
 #endif
 #endif /* CONFIG_WIFI_BLE_COEX_APP */
 
+#include "wlan_bt_fw.h"
 #ifdef RW612_SERIES
+#include "fsl_rtc.h"
 #if(CONFIG_OT_CLI)
 #include "fwk_platform_coex.h"
 #else
 #include "fwk_platform_ble.h"
 #endif /* CONFIG_OT_CLI */
 #else /* !RW612_SERIES */
-#include "wlan_bt_fw.h"
 #include "coex_nb_uart_fw_download.h"
 #include "wifi_bt_config.h"
 #endif /* RW612_SERIES */
