@@ -198,5 +198,7 @@
 
 #define CONFIG_SUPP_DEBUG 0
 
+#define CONFIG_WIFI_TASK_PRIORITY_OFFSET 2
+
 #endif /* _WIFI_CONFIG_H_ */
 
