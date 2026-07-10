@@ -156,6 +156,18 @@ SECTIONS
     KEEP (*(.init))
     KEEP (*(.fini))
   } > m_text
+  
+  .z_init :
+  {
+    __init_start = .;
+    __init_EARLY_start = .; KEEP(*(SORT(.z_init_EARLY_P_?_*))); KEEP(*(SORT(.z_init_EARLY_P_??_*))); KEEP(*(SORT(.z_init_EARLY_P_???_*)));
+    __init_PRE_KERNEL_1_start = .; KEEP(*(SORT(.z_init_PRE_KERNEL_1_P_?_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_1_P_??_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_1_P_???_*)));
+    __init_PRE_KERNEL_2_start = .; KEEP(*(SORT(.z_init_PRE_KERNEL_2_P_?_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_2_P_??_*))); KEEP(*(SORT(.z_init_PRE_KERNEL_2_P_???_*)));
+    __init_POST_KERNEL_start = .; KEEP(*(SORT(.z_init_POST_KERNEL_P_?_*))); KEEP(*(SORT(.z_init_POST_KERNEL_P_??_*))); KEEP(*(SORT(.z_init_POST_KERNEL_P_???_*)));
+    __init_APPLICATION_start = .; KEEP(*(SORT(.z_init_APPLICATION_P_?_*))); KEEP(*(SORT(.z_init_APPLICATION_P_??_*))); KEEP(*(SORT(.z_init_APPLICATION_P_???_*)));
+    __init_end = .;
+  } > m_text
+
   ._bt_settings_area :
   {
     . = ALIGN(4);
@@ -180,6 +192,24 @@ SECTIONS
     _bt_conn_cb_list_start = .;
     KEEP(*(SORT(._bt_conn_cb.static.*)))
     _bt_conn_cb_list_end = .;
+    . = ALIGN(4);
+  } > m_text
+
+  ._bt_sco_conn_cb :
+  {
+    . = ALIGN(4);
+    _bt_sco_conn_cb_list_start = .;
+    KEEP(*(SORT(._bt_sco_conn_cb*)))
+    _bt_sco_conn_cb_list_end = .;
+    . = ALIGN(4);
+  } > m_text
+
+  ._bt_sco_hci_cb :
+  {
+    . = ALIGN(4);
+    _bt_sco_hci_cb_list_start = .;
+    KEEP(*(SORT(._bt_sco_hci_cb*)))
+    _bt_sco_hci_cb_list_end = .;
     . = ALIGN(4);
   } > m_text
 
@@ -314,6 +344,8 @@ SECTIONS
     . = ALIGN(32);
     *(CacheLineData.init)
     . = ALIGN(32);
+    *(DataQuickAccess)       /* quick access data section */
+    . = ALIGN(32);
     /* Explicit placement of flash and frequently executed functions in RAM */
     */fsl_adapter_flexspi_nor_flash.c.obj
     */mflash_drv.c.obj (.text .text* .rodata .rodata*)
@@ -329,6 +361,11 @@ SECTIONS
     _net_buf_pool_list_start = .;
     KEEP(*(SORT(._net_buf_pool*)))
     _net_buf_pool_list_end = .;
+    . = ALIGN(4);
+    . = ALIGN(4);
+    __shell_command_list_start = .;
+    KEEP(*(SORT(.__shell_command*)))
+    __shell_command_list_end = .;
     . = ALIGN(4);
     __data_end__ = .;        /* define a global symbol at data end */
   } > m_data2

@@ -10,6 +10,8 @@
 
 #include "wifi_bt_module_config.h"
 
+#define CONFIG_WIFI_TASK_PRIORITY_OFFSET 2
+
 #define CONFIG_IPV6 1
 #define CONFIG_MAX_IPV6_ADDRESSES 8
 

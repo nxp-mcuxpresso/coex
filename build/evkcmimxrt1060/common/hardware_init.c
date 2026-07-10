@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2023-2025 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -8,29 +8,29 @@
 /*${header:start}*/
 #include "pin_mux.h"
 #include "board.h"
-#include "fsl_common.h"
 #include "clock_config.h"
 #include "fsl_adapter_uart.h"
 
-#include "controller_hci_uart.h"
-#include "usb_host_config.h"
-#include "usb_phy.h"
-#include "usb_host.h"
+#include <zephyr/drivers/bluetooth.h>
 #include "fsl_lpuart_edma.h"
 #include "fsl_dmamux.h"
-#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)))
-#include "psa/crypto.h"
-#endif /* CONFIG_BT_SMP */
+#if defined(CONFIG_BT_HOST_CRYPTO) && !defined(CONFIG_BT_CRYPTO_PSA)
+#include "ksdk_mbedtls.h"
+#endif /* CONFIG_BT_HOST_CRYPTO && !CONFIG_BT_CRYPTO_PSA */
+#if CONFIG_COEX_NB_BSP_TRIGGER
+#include "fsl_iomuxc.h"
+#include "fsl_gpio.h"
+#endif /* CONFIG_COEX_NB_BSP_TRIGGER */
 /*${header:end}*/
 
 /*${macro:start}*/
-#if defined(__GIC_PRIO_BITS)
-#define USB_HOST_INTERRUPT_PRIORITY (25U)
-#elif defined(__NVIC_PRIO_BITS) && (__NVIC_PRIO_BITS >= 3)
-#define USB_HOST_INTERRUPT_PRIORITY (6U)
-#else
-#define USB_HOST_INTERRUPT_PRIORITY (3U)
-#endif
+#if CONFIG_COEX_NB_BSP_TRIGGER
+/* LPUART3 RTS_B: GPIO_AD_B1_05 -> GPIO1_IO21 */
+#define COEX_NB_BSP_RTS_GPIO     GPIO1
+#define COEX_NB_BSP_RTS_PIN      21U
+#define COEX_NB_BSP_RTS_MUX_GPIO IOMUXC_GPIO_AD_B1_05_GPIO1_IO21
+#define COEX_NB_BSP_RTS_MUX_UART IOMUXC_GPIO_AD_B1_05_LPUART3_RTS_B
+#endif /* CONFIG_COEX_NB_BSP_TRIGGER */
 /*${macro:end}*/
 
 /*${variable:start}*/
@@ -38,19 +38,6 @@
 /*${variable:end}*/
 
 /*${function:start}*/
-
-#if (defined(CONFIG_BT_SMP) && (CONFIG_BT_SMP > 0))
-void bt_psa_crypto_init(void)
-{
-    psa_status_t status;
-
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        PRINTF("Failed to initialize PSA crypto");
-    }
-    assert(status == PSA_SUCCESS);
-}
-#endif /* CONFIG_BT_SMP */
 
 void BOARD_InitHardware(void)
 {
@@ -66,9 +53,11 @@ void BOARD_InitHardware(void)
     EDMA_GetDefaultConfig(&config);
     EDMA_Init(dmaBases[0], &config);
 #endif
-#if (((defined(CONFIG_BT_SMP)) && (CONFIG_BT_SMP)))
-    bt_psa_crypto_init();
-#endif /* CONFIG_BT_SMP */
+#if defined(CONFIG_BT_HOST_CRYPTO) && !defined(CONFIG_BT_CRYPTO_PSA)
+    /* TODO: Legacy Mbedtls code from edgefast_open shell.
+    Will update once changes from edgefast_open done.*/
+    CRYPTO_InitHardware();
+#endif /* CONFIG_BT_HOST_CRYPTO && !CONFIG_BT_CRYPTO_PSA */
 }
 
 #if (defined(WIFI_88W8987_BOARD_MURATA_1ZM_M2) || defined(WIFI_IW416_BOARD_MURATA_1XK_M2) || \
@@ -97,40 +86,17 @@ int controller_hci_uart_get_configuration(controller_hci_uart_config_t *config)
 }
 #endif
 
-void USB_HostClockInit(void)
+#if CONFIG_COEX_NB_BSP_TRIGGER
+int coex_nb_bsp_trigger(void)
 {
-    usb_phy_config_struct_t phyConfig = {
-        BOARD_USB_PHY_D_CAL,
-        BOARD_USB_PHY_TXCAL45DP,
-        BOARD_USB_PHY_TXCAL45DM,
-    };
-
-    if (CONTROLLER_ID == kUSB_ControllerEhci0)
-    {
-        CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
-        CLOCK_EnableUsbhs0Clock(kCLOCK_Usb480M, 480000000U);
-    }
-    else
-    {
-        CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
-        CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
-    }
-    USB_EhciPhyInit(CONTROLLER_ID, BOARD_XTAL0_CLK_HZ, &phyConfig);
+    gpio_pin_config_t rts_cfg = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
+    IOMUXC_SetPinMux(COEX_NB_BSP_RTS_MUX_GPIO, 0U);
+    GPIO_PinInit(COEX_NB_BSP_RTS_GPIO, COEX_NB_BSP_RTS_PIN, &rts_cfg);
+    GPIO_PinWrite(COEX_NB_BSP_RTS_GPIO, COEX_NB_BSP_RTS_PIN, 0U);  /* assert RTS low */
+    OSA_TimeDelay(5);
+    GPIO_PinWrite(COEX_NB_BSP_RTS_GPIO, COEX_NB_BSP_RTS_PIN, 1U);  /* deassert RTS high */
+    IOMUXC_SetPinMux(COEX_NB_BSP_RTS_MUX_UART, 0U);
+    return 0;
 }
-
-void USB_HostIsrEnable(void)
-{
-    uint8_t irqNumber;
-
-    uint8_t usbHOSTEhciIrq[] = USBHS_IRQS;
-    irqNumber                = usbHOSTEhciIrq[CONTROLLER_ID - kUSB_ControllerEhci0];
-
-/* Install isr, set priority, and enable IRQ. */
-#if defined(__GIC_PRIO_BITS)
-    GIC_SetPriority((IRQn_Type)irqNumber, USB_HOST_INTERRUPT_PRIORITY);
-#else
-    NVIC_SetPriority((IRQn_Type)irqNumber, USB_HOST_INTERRUPT_PRIORITY);
-#endif
-    EnableIRQ((IRQn_Type)irqNumber);
-}
+#endif /* CONFIG_COEX_NB_BSP_TRIGGER */
 /*${function:end}*/
