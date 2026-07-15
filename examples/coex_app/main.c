@@ -113,7 +113,7 @@ static int ticklessIdleAllowed = 1;
 #endif
 #endif
 
-const int TASK_MAIN_PRIO       = (configMAX_PRIORITIES-5);
+const int TASK_MAIN_PRIO       = (CONFIG_NUM_PREEMPT_PRIORITIES - 5);
 const int TASK_MAIN_STACK_SIZE = (2 * 1024);
 TaskHandle_t task_main_handle;
 
