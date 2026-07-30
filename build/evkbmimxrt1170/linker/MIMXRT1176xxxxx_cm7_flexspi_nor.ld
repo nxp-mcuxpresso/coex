@@ -61,7 +61,7 @@ EDGEFAST_BT_LITTLEFS_STORAGE_MAX_SECTORS = (0x30FBFFFF - EDGEFAST_BT_LITTLEFS_ST
 
 HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x0400;
 STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0400;
-RPMSG_SHMEM_SIZE = DEFINED(__use_shmem__) ? 0x2000 : 0;
+RPMSG_SHMEM_SIZE = 0x8000;
 VECTOR_RAM_SIZE = DEFINED(__ram_vector_table__) ? 0x00000400 : 0;
 
 /* Specify the memory areas */
@@ -73,8 +73,8 @@ MEMORY
   m_text                (RX)  : ORIGIN = m_text_start, LENGTH = m_text_size
   m_qacode              (RX)  : ORIGIN = 0x00000000, LENGTH = 0x00040000
   m_data                (RW)  : ORIGIN = 0x20000000, LENGTH = 0x00040000
-  m_data2               (RW)  : ORIGIN = 0x20240000 + RPMSG_SHMEM_SIZE, LENGTH = 0x00120000 - RPMSG_SHMEM_SIZE
-  rpmsg_sh_mem          (RW)  : ORIGIN = 0x20300000, LENGTH = RPMSG_SHMEM_SIZE
+  m_data2               (RW)  : ORIGIN = 0x20240000, LENGTH = 0x00120000 - RPMSG_SHMEM_SIZE
+  rpmsg_sh_mem          (RW)  : ORIGIN = 0x20360000 - RPMSG_SHMEM_SIZE, LENGTH = RPMSG_SHMEM_SIZE
   m_core1_image         (RX)  : ORIGIN = 0x30FC0000, LENGTH = 0x00040000
 }
 
@@ -457,14 +457,14 @@ SECTIONS
     *(NonCacheable.init)
     . = ALIGN(4);
     __noncachedata_init_end__ = .;   /* create a global symbol at initialized ncache data end */
-  } > m_data
+  } > rpmsg_sh_mem
   . = __noncachedata_init_end__;
   .ncache :
   {
     *(NonCacheable)
     . = ALIGN(4);
     __noncachedata_end__ = .;     /* define a global symbol at ncache data end */
-  } > m_data
+  } > rpmsg_sh_mem
 
   __DATA_END = __NDATA_ROM + (__noncachedata_init_end__ - __noncachedata_start__);
   text_end = ORIGIN(m_text) + LENGTH(m_text);
@@ -520,4 +520,3 @@ SECTIONS
 
   ASSERT(__StackLimit >= __HeapLimit, "region m_data2 overflowed with stack and heap")
 }
-
