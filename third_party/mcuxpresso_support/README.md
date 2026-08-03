@@ -176,7 +176,13 @@ cd <sdk_root>/boards/<board>/coex_examples/third_party/mcuxpresso_support/ot-nxp
 **Example: Build for RW612 Platform**
 
 ```bash
-./script/build_rw612 ot_cli -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=OFF -DCMAKE_BUILD_TYPE=Debug -DCOEX_RTOS_MAX_PRIO=<value_for_configMAX_PRIORITIES>
+./script/build_rw612 ot_cli -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=0 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=OFF -DCMAKE_BUILD_TYPE=Debug -DCOEX_RTOS_MAX_PRIO=12
+```
+
+**Example: Build for RT1060 Platform**
+
+```bash
+./script/build_rt1060 iw610_spi -DOT_NXP_BUILD_APP_AS_LIB=ON -DBOARD_APP_UART_INSTANCE=8 -DOT_NXP_DISABLE_TCP=ON -DOT_NXP_LWIP_IPERF=ON -DOT_APP_CLI_FREERTOS_IPERF=ON -DOT_NXP_LWIP=ON -DOT_APP_BR_FREERTOS=OFF -DOT_NXP_ENABLE_WPA_SUPP_MBEDTLS=ON -DCMAKE_BUILD_TYPE=Debug -DCOEX_RTOS_MAX_PRIO=12
 ```
 
 ### 3.3 Troubleshooting: Build Fails on Windows (Long Path Issue)
@@ -196,7 +202,7 @@ cmd //c "subst"
 cd /w/ot-nxp
 
 # Rebuild
-./script/build_rw612 ot_cli <options>
+./script/build_<platform> <target> <options>
 ```
 
 > **Note**: `W:` is a temporary virtual drive (session-based, no files are copied). It disappears after reboot and can be removed manually with `cmd //c "subst W: /D"`. Removing it does **not** affect your original files.
@@ -415,8 +421,8 @@ boards/<board>/coex_examples/
 │       ├── add_openthread_to_mcuxpresso.py
 │       ├── README.md
 │       ├── ot-nxp/                    ← Cloned from GitHub
-│       │   ├── build_rw612/           ← Generated after Step 3 build
-│       │   ├── script/build_rw612
+│       │   ├── build_<platform>/       ← Generated after Step 3 build
+│       │   ├── script/build_<platform>
 │       │   └── third_party/nxp_matter_support/
 │       └── sdk/                       ← Downloaded by Step 2.2 (Windows only)
 │           └── repo/mcuxsdk/          ← Actual SDK root
@@ -432,8 +438,8 @@ boards/<board>/coex_examples/
 │       ├── add_openthread_to_mcuxpresso.py
 │       ├── README.md
 │       └── ot-nxp/                              ← Cloned from GitHub
-│           ├── build_rw612/                     ← Generated after Step 3 build
-│           ├── script/build_rw612
+│           ├── build_<platform>/                ← Generated after Step 3 build
+│           ├── script/build_<platform>
 │           └── third_party/nxp_matter_support/
 │               └── github_sdk/sdk_next/
 │                   └── repo/mcuxsdk/            ← Downloaded by Step 2.2

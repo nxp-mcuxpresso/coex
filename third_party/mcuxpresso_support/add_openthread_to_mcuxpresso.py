@@ -81,6 +81,7 @@ PLATFORM_CONFIGS = [
     "mcxw70-mbedtls-config.h",
     "mcxw71-mbedtls-config.h",
     "mcxw72-mbedtls-psa-config.h",
+    "rw612-mbedtls-psa-config.h",
     "rt1060-mbedtls-psa-config.h",
     "rt1170-mbedtls-psa-config.h"
 ]
@@ -91,6 +92,13 @@ PORT_EXCLUDED = [
     "mcux_mbedtls_psa_crypto_config.h",
     "mcux_psa_defines.h"
 ]
+
+# Board name to OT build directory and mbedtls PSA config mapping
+BOARD_BUILD_CONFIG = {
+    "rdrw612bga": ("build_rw612/rw612_ot_cli", "rw612-mbedtls-psa-config.h"),
+    "frdmrw612":  ("build_rw612/rw612_ot_cli", "rw612-mbedtls-psa-config.h"),
+    "evkcmimxrt1060": ("build_rt1060/iw610_spi", "rt1060-mbedtls-psa-config.h"),
+}
 
 def calculate_relative_path(ot_nxp_root, xml_dir):
     """Calculate relative path from XML directory to ot-nxp root.
@@ -209,10 +217,14 @@ class HeaderDependencyAnalyzer:
                 except ValueError:
                     pass
     
-    def get_headers_by_directory(self):
+    def get_headers_by_directory(self, psa_config_name=None):
         """Group all discovered headers by directory with filtering.
         
         Returns paths with forward slashes for XML consistency.
+
+        psa_config_name: the PSA config file for the current board (e.g.
+            "rt1060-mbedtls-psa-config.h").  This file is kept even though it
+            appears in PLATFORM_CONFIGS; all other platform configs are excluded.
         """
         headers_by_dir = defaultdict(set)
         
@@ -222,6 +234,9 @@ class HeaderDependencyAnalyzer:
         ]
         
         port_whitelist = ["mcux_mbedtls_accelerator_config.h"]
+
+        # Exclude all platform-specific configs except the one used by this board.
+        platform_configs_excluded = set(PLATFORM_CONFIGS) - ({psa_config_name} if psa_config_name else set())
         
         for header in self.processed:
             # header already uses forward slashes from analyze_dependencies
@@ -231,7 +246,7 @@ class HeaderDependencyAnalyzer:
             if any(excluded in dir_name for excluded in excluded_dirs):
                 continue
             
-            if file_name in PLATFORM_CONFIGS:
+            if file_name in platform_configs_excluded:
                 continue
             
             if "mbedtls3x/port" in dir_name:
@@ -380,7 +395,7 @@ class XMLUpdater:
         
         return added
     
-    def add_source_groups(self, headers_by_dir, ot_nxp_root):
+    def add_source_groups(self, headers_by_dir, ot_nxp_root, psa_config_name=None):
         """Add source groups with cross-platform path handling."""
         if self.dry_run:
             total_headers = sum(len(h) for h in headers_by_dir.values())
@@ -404,7 +419,8 @@ class XMLUpdater:
         added_groups = 0
         added_headers = 0
         
-        excluded_files = set(PLATFORM_CONFIGS) | {"time.h"}
+        # Exclude all platform-specific configs except the one used by this board.
+        excluded_files = (set(PLATFORM_CONFIGS) - ({psa_config_name} if psa_config_name else set())) | {"time.h"}
         
         port_whitelist = {"mcux_mbedtls_accelerator_config.h"}
         
@@ -539,7 +555,10 @@ def find_xml_file_auto(app_name, script_location=None):
     else:
         xml_file = xml_files[0]
 
-    return xml_file, ot_nxp_root, app_dir
+    # Extract board name from path
+    board_name = coex_examples_dir.parent.name
+
+    return xml_file, ot_nxp_root, app_dir, board_name
 
 
 def generate_change_report(xml_file, headers_by_dir, stats, ot_nxp_root):
@@ -655,7 +674,7 @@ def generate_change_report(xml_file, headers_by_dir, stats, ot_nxp_root):
         f.write("## Dependency Analysis Details\n\n")
         f.write("**Entry Configuration Files:**\n\n")
         f.write("1. `ot-nxp-mbedtls-config.h`\n")
-        f.write("2. `rw612-mbedtls-psa-config.h`\n")
+        f.write("2. Platform-specific `<platform>-mbedtls-psa-config.h`\n")
         f.write("\n**Analysis Method:**\n")
         f.write("- Recursively parsed `#include` statements\n")
         f.write("- Maximum recursion depth: 10 levels\n")
@@ -727,9 +746,10 @@ def main():
             print("Example: python3 add_openthread_to_mcuxpresso.py --app coex_wifi_edgefast")
             return 1
         
-        xml_file, ot_nxp_root, app_dir = find_xml_file_auto(args.app_name)
+        xml_file, ot_nxp_root, app_dir, board_name = find_xml_file_auto(args.app_name)
         print(f"  Found XML: {xml_file.relative_to(app_dir.parent.parent)}")
         print(f"  App directory: {app_dir}")
+        print(f"  Board: {board_name}")
     
     except FileNotFoundError as e:
         print(f"\nERROR: {e}")
@@ -739,11 +759,19 @@ def main():
     
     # Step 2: Parse compile_commands.json
     print("\nStep 2: Parsing compile_commands.json...")
-    compile_commands = ot_nxp_root / "build_rw612" / "rw612_ot_cli" / "compile_commands.json"
-    
+    if board_name not in BOARD_BUILD_CONFIG:
+        print(f"ERROR: Unsupported board '{board_name}'. Supported: {list(BOARD_BUILD_CONFIG.keys())}")
+        return 1
+
+    build_subdir, psa_config_name = BOARD_BUILD_CONFIG[board_name]
+    compile_commands = ot_nxp_root / build_subdir / "compile_commands.json"
+
     if not compile_commands.exists():
         print(f"ERROR: {compile_commands} not found")
+        print(f"  Please build OpenThread first for {board_name}")
         return 1
+
+    print(f"  Using: {build_subdir}/compile_commands.json")
     
     with open(compile_commands, encoding="utf-8") as f:
         commands = json.load(f)
@@ -786,14 +814,14 @@ def main():
     
     config_files = [
         ot_nxp_root / "third_party" / "mbedtls" / "configs" / "ot-nxp-mbedtls-config.h",
-        ot_nxp_root / "third_party" / "mbedtls" / "configs" / "rw612-mbedtls-psa-config.h"
+        ot_nxp_root / "third_party" / "mbedtls" / "configs" / psa_config_name
     ]
     
     for config_file in config_files:
         if config_file.exists():
             analyzer.analyze_dependencies(config_file, search_paths)
     
-    headers_by_dir = analyzer.get_headers_by_directory()
+    headers_by_dir = analyzer.get_headers_by_directory(psa_config_name)
     print(f"  Found {len(headers_by_dir)} directories with headers")
     print(f"  Total headers: {sum(len(h) for h in headers_by_dir.values())}")
     
@@ -810,7 +838,7 @@ def main():
     updater.remove_ot_nxp_content()
     
     added_paths = updater.add_include_paths(headers_by_dir.keys(), ot_nxp_root)
-    added_groups, added_headers = updater.add_source_groups(headers_by_dir, ot_nxp_root)
+    added_groups, added_headers = updater.add_source_groups(headers_by_dir, ot_nxp_root, psa_config_name)
     
     print(f"  Include paths: {added_paths}")
     print(f"  Source groups: {added_groups}")
