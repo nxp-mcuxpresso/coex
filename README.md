@@ -22,8 +22,10 @@ To learn more about building and running the examples please check:
 **SDK Repository (CMake command-line build):**
 
 - RDRW612 -> [README-RW612BGA](build/rdrw612bga/readme.md)
- 
+
 - FRDMRW612 -> [README-FRDMRW612](build/frdmrw612/readme.md)
+
+- EVKCMIMXRT1060 -> [README-EVKCMIMXRT1060](build/evkcmimxrt1060/readme.md)
 
 **SDK Package (MCUXpresso IDE build):**
 
