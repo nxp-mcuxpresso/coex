@@ -304,6 +304,15 @@ Set `CONFIG_OT` to 1:
    - Select `<app_name>` (e.g., `coex_wifi_edgefast`)
 4. Click **Next**, then **Finish**
 
+### 6.2.1 Check `CONFIG_BT_ONLY_DNLD` for OT builds (RT1060 only)
+
+When building with `CONFIG_OT=1` on RT1060, check whether `CONFIG_BT_ONLY_DNLD` is defined in the project preprocessor symbols. If it is defined, it must be removed:
+
+1. Right-click project → **Properties**
+2. **C/C++ Build** → **Settings** → **MCU C Compiler** → **Preprocessor**
+3. In **Defined symbols (-D)**, check if `CONFIG_BT_ONLY_DNLD` exists. If so, select it and delete it.
+4. Click **Apply and Close**
+
 ### 6.3 Build Project
 
 1. Right-click on the imported project in Project Explorer

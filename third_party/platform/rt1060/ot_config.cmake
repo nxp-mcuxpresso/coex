@@ -14,32 +14,6 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PUBLIC
     #${SdkRootDirPath}/middleware/mbedtls3x/framework/psasim/include
 )
 
-# Add LPSPI adapter for OpenThread SPI interface
-mcux_add_source(
-    BASE_PATH ${SdkRootDirPath}
-    SOURCES components/spi/fsl_adapter_lpspi.c
-            components/spi/fsl_adapter_spi.h
-            drivers/lpspi/fsl_lpspi.c
-)
-mcux_add_include(
-    BASE_PATH ${SdkRootDirPath}
-    INCLUDES components/spi
-             drivers/lpspi
-)
-
-mcux_add_source(
-    BASE_PATH ${SdkRootDirPath}
-    SOURCES middleware/wireless/framework/services/FileSystem/fwk_filesystem.c
-            middleware/wireless/framework/services/FileSystem/fwk_filesystem.h
-            middleware/wireless/coex/build/evkcmimxrt1060/common/peripherals.c
-)
-mcux_add_include(
-    BASE_PATH ${SdkRootDirPath}
-    INCLUDES middleware/wireless/framework/services/FileSystem
-             middleware/wireless/framework/platform/rt1060
-             middleware/wireless/coex/build/evkcmimxrt1060/common
-)
-
 target_compile_definitions(${MCUX_SDK_PROJECT_NAME} PUBLIC
     MBEDTLS_MCUX_ENTROPY=1
 )
