@@ -61,7 +61,7 @@ EDGEFAST_BT_LITTLEFS_STORAGE_MAX_SECTORS = (0x30FBFFFF - EDGEFAST_BT_LITTLEFS_ST
 
 HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x0400;
 STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0400;
-RPMSG_SHMEM_SIZE = 0x8000;
+RPMSG_SHMEM_SIZE = DEFINED(gRpmsgShmemSize) ? gRpmsgShmemSize : 0x8000;
 VECTOR_RAM_SIZE = DEFINED(__ram_vector_table__) ? 0x00000400 : 0;
 
 /* Specify the memory areas */
