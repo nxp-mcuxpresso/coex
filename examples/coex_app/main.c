@@ -22,8 +22,15 @@
 
 #include "FreeRTOS.h"
 
-#if !defined(RW612_SERIES)
+/* RW610 and RW612 belong to the RW61x family and share the same on-chip
+ * WLAN/BLE (IMU) integration, so they must follow the same build path here. */
+#if defined(RW612_SERIES) || defined(RW610_SERIES)
+#define RW61X_SERIES
+#endif
+
+#if !defined(RW61X_SERIES)
 #include "wifi.h"
+
 #include "fsl_sdmmc_host.h"
 #include "app.h"
 #include "fsl_device_registers.h"
@@ -31,10 +38,11 @@
 #include "fsl_gpc.h"
 #include "fsl_lpuart_edma.h"
 #include "fsl_dmamux.h"
-#endif /* RW612_SERIES */
+#endif /* RW61X_SERIES */
 
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
 #ifndef CONFIG_WPA_SUPP_CRYPTO_MBEDTLS_PSA
+
 #if defined(MBEDTLS_NXP_SSSAPI)
 #include "sssapi_mbedtls.h"
 #elif defined(MBEDTLS_MCUX_CSS_API)
@@ -61,11 +69,12 @@
 #if defined(APP_LOWPOWER_ENABLED) && (APP_LOWPOWER_ENABLED > 0)
 #include "PWR_Interface.h"
 #endif /* APP_LOWPOWER_ENABLED */
-#endif /* RW612_SERIES */
+#endif /* RW61X_SERIES */
 
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
 #include "app_config.h"
 #endif
+
 #include "coex_shell.h"
 
 #if defined(MBEDTLS_USER_CONFIG_FILE)
@@ -101,9 +110,10 @@ extern void otSysRunIdleTask(void);
  * Variables
  ******************************************************************************/
 
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)
 #if (CONFIG_OT_CLI && gBoardUseFro32k_d)
+
 /* Tickless idle is not allowed by default when using FRO32k */
 static int ticklessIdleAllowed = 0;
 #else
@@ -131,8 +141,11 @@ void task_main(void *param)
 {
 
     printSeparator();
-#if defined(RW612_SERIES)
+#if defined(RW610_SERIES)
+    PRINTF("     Initialize RW610 Module\r\n");
+#elif defined(RW612_SERIES)
     PRINTF("     Initialize RW612 Module\r\n");
+
 #elif defined(WIFI_IW610_BOARD_MURATA_2LL_M2)
     PRINTF("     Initialize Nighthwak-2LL (IW610) M2 Module\r\n");
 #elif defined(WIFI_IW612_BOARD_MURATA_2EL_USD)
@@ -161,9 +174,10 @@ int main(void)
     BOARD_InitM2UARTPins();
 #endif
 
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
     APP_InitServices();
 #endif
+
 
 #if defined(MBEDTLS_THREADING_C) && defined(MBEDTLS_THREADING_ALT)
     config_mbedtls_threading_alt();
@@ -194,9 +208,10 @@ void vApplicationIdleHook(void)
 }
 #endif
 
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
 #if defined(configUSE_TICKLESS_IDLE) && (configUSE_TICKLESS_IDLE == 1)
 void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime)
+
 {
 #if defined(APP_LOWPOWER_ENABLED) && (APP_LOWPOWER_ENABLED > 0)
     bool abortIdle = false;
@@ -241,7 +256,8 @@ void APP_SetTicklessIdle(bool enable)
     }
 }
 #endif /* configUSE_TICKLESS_IDLE */
-#endif /* RW612_SERIES*/
+#endif /* RW61X_SERIES*/
+
 /**
  * @brief Loop forever if stack overflow is detected.
  *

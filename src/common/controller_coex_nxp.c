@@ -21,21 +21,30 @@
 #endif /* CONFIG_WIFI_BLE_COEX_APP */
 
 #include "wlan_bt_fw.h"
-#ifdef RW612_SERIES
+
+/* RW610 and RW612 belong to the RW61x family and share the same IMU-based
+ * firmware download and combo controller initialization flow. Treat both
+ * devices identically for coex controller support. */
+#if defined(RW612_SERIES) || defined(RW610_SERIES)
+#define RW61X_SERIES
+#endif
+
+#ifdef RW61X_SERIES
 #include "fsl_rtc.h"
 #if(CONFIG_OT_CLI)
 #include "fwk_platform_coex.h"
 #else
 #include "fwk_platform_ble.h"
 #endif /* CONFIG_OT_CLI */
-#else /* !RW612_SERIES */
+#else /* !RW61X_SERIES */
 #include "coex_nb_uart_fw_download.h"
 #include "wifi_bt_config.h"
-#endif /* RW612_SERIES */
+#endif /* RW61X_SERIES */
 
-#ifndef RW612_SERIES
+#ifndef RW61X_SERIES
 int sdio_drv_init(void (*cd_int)(int));
 #endif
+
 
 static void printSeparator(void)
 {
@@ -74,9 +83,10 @@ static struct wlan_network uap_network;
 static struct wlan_network sta_network;
 extern int ping_cli_init(void);
 
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
 static void dump_set_rtc_time_usage(void)
 {
+
     (void)PRINTF("Usage: wlan-set-rtc-time <year> <month> <day> <hour> <minute> <second>\r\n");
     (void)PRINTF("\r\nUsage example : \r\n");
     (void)PRINTF("wlan-set-rtc-time 2022 12 31 19 00\r\n");
@@ -226,9 +236,10 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
                 PRINTF("Failed to initialize DHCP Server CLI\r\n");
                 return 0;
             }
-#ifdef RW612_SERIES
+#ifdef RW61X_SERIES
             ret = wlan_prov_cli_init();
             if (ret != WM_SUCCESS)
+
             {
                 PRINTF("Failed to initialize PROV CLI\r\n");
                 return 0;
@@ -387,12 +398,13 @@ int wlan_event_callback(enum wlan_event_reason reason, void *data)
 extern void appOtStart(int argc, char *argv[]);
 #endif
 
-#ifndef RW612_SERIES
+#ifndef RW61X_SERIES
 #if(CONFIG_OT_CLI)
 extern int PLATFORM_IOEXP_I2C_program(uint8_t addr, uint8_t reg, uint8_t val);
 #endif
 
 void coex_controller_init(void)
+
 {
     int result;
     (void) result;
@@ -429,11 +441,12 @@ void coex_controller_init(void)
 #endif
 }
 
-#else /* RW612_SERIES */
+#else /* RW61X_SERIES */
 /* Initialize the platform */
 void coex_controller_init(void)
 {
     int result = 0;
+
     (void) result;
 
 #if(CONFIG_WIFI_BLE_COEX_APP)
@@ -471,4 +484,5 @@ void coex_controller_init(void)
     PLATFORM_InitBle();
 #endif
 }
-#endif /* RW612_SERIES */
+#endif /* RW61X_SERIES */
+
