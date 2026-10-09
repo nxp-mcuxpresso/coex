@@ -12,7 +12,7 @@ The repository contains:
 
 ## Documentation
 
-Overall details can be reviewed here:[MCUXpresso SDK Online Documentation](https://mcuxpresso.nxp.com/mcuxsdk/latest/html/introduction/README.html#mcuxpresso-sdk)
+Overall details can be reviewed here:[MCUXpresso SDK Online Documentation](https://docs.mcuxpresso.nxp.com/mcuxsdk/latest/introduction/README.html#mcuxpresso-sdk)
 
 ## Setup
 
